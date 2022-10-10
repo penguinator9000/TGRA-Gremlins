@@ -101,12 +101,91 @@ class Cube:
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0]
-
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
         
         for i in range(6):
+            glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
+
+class D8:
+    def __init__(self):
+        self.position_array=[ 0.5, 0.0, 0.0,
+                              0.0, 0.5, 0.0,
+                              0.0, 0.0, 0.5,
+                             -0.5, 0.0, 0.0,
+                              0.0, 0.5, 0.0,
+                              0.0, 0.0, 0.5,
+                              0.5, 0.0, 0.0,
+                              0.0,-0.5, 0.0,
+                              0.0, 0.0, 0.5,
+                              0.5, 0.0, 0.0,
+                              0.0, 0.5, 0.0,
+                              0.0, 0.0,-0.5,
+                             -0.5, 0.0, 0.0,
+                              0.0,-0.5, 0.0,
+                              0.0, 0.0, 0.5,
+                              0.5, 0.0, 0.0,
+                              0.0,-0.5, 0.0,
+                              0.0, 0.0,-0.5,
+                             -0.5, 0.0, 0.0,
+                              0.0, 0.5, 0.0,
+                              0.0, 0.0,-0.5,
+                             -0.5, 0.0, 0.0,
+                              0.0,-0.5, 0.0,
+                              0.0, 0.0,-0.5,]
+
+        self.normal_array= [ 1, 1, 1,
+                             1, 1, 1,
+                             1, 1, 1,
+                            -1, 1, 1,
+                            -1, 1, 1,
+                            -1, 1, 1,
+                             1,-1, 1,
+                             1,-1, 1,
+                             1,-1, 1,
+                             1, 1,-1,
+                             1, 1,-1,
+                             1, 1,-1,
+                            -1,-1, 1,
+                            -1,-1, 1,
+                            -1,-1, 1,
+                             1,-1,-1,
+                             1,-1,-1,
+                             1,-1,-1,
+                            -1, 1,-1,
+                            -1, 1,-1,
+                            -1, 1,-1,
+                            -1,-1,-1,
+                            -1,-1,-1,
+                            -1,-1,-1 ]
+        
+    def draw(self, shader):
+        
+        shader.set_position_attribute(self.position_array)
+        shader.set_normal_attribute(self.normal_array)
+        
+        for i in range(8):
+            glDrawArrays(GL_TRIANGLE_FAN, i*3, 3)
+
+class Plane:
+    def __init__(self):
+        self.position_array = [-0.5, 0,-0.5,
+                               -0.5, 0, 0.5,
+                                0.5, 0,-0.5,
+                                0.5, 0, 0.5,
+                            ]
+        self.normal_array = [0.0,-1.0,0.0,
+                             0.0,-1.0,0.0,
+                             0.0,-1.0,0.0,
+                             0.0,-1.0,0.0,
+                            ]
+    def draw(self, shader):
+        
+        shader.set_position_attribute(self.position_array)
+        shader.set_normal_attribute(self.normal_array)
+        
+        for i in range(1):
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
         

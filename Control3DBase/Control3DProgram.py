@@ -2,13 +2,15 @@
 # from OpenGL.GL import *
 # from OpenGL.GLU import *
 from math import *
+from turtle import Screen
 
 import pygame
 from pygame.locals import *
 
 import sys
 import time
-
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
 from Shaders import *
 from Matrices import *
 class GraphicalObject:
@@ -46,7 +48,7 @@ class GraphicalObject:
 class GraphicsProgram3D:
     def __init__(self):
         pygame.init() 
-        pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
+        pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)
 
         self.shader = Shader3D()
         self.shader.use()
@@ -57,6 +59,9 @@ class GraphicsProgram3D:
 
         self.projection_view_matrix = ProjectionViewMatrix()
         self.projection_matrix = ProjectionMatrix()
+        #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
+        self.projection_matrix.set_perspective(90,SCREEN_WIDTH/SCREEN_HEIGHT,0.5,100)
+        
         self.view_matrix = ViewMatrix()
         self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
        
@@ -64,50 +69,76 @@ class GraphicsProgram3D:
 
         self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
         c = Cube()
-        self.objects = [GraphicalObject(c),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1))]
+        d8=D8()
+        self.objects = [GraphicalObject(c),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(d8,color=(1,1,0),pos=(-1,0,1))]
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
-        self.angle = 0
+        ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
+        self.UP_key_down = False  
+        self.DOWN_key_down = False
+        self.RIGHT_key_down = False
+        self.LEFT_key_down = False
 
-        self.UP_key_down = False  ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
+        self.w_key_down = False
+        self.a_key_down = False
+        self.s_key_down = False
+        self.d_key_down = False
 
-        self.white_background = False
+        self.q_key_down = False
+        self.e_key_down = False
+        self.r_key_down = False
+        self.f_key_down = False
+
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
 
-        self.angle += pi * delta_time
-        # if angle > 2 * pi:
-        #     angle -= (2 * pi)
         if self.UP_key_down:
-            self.white_background = True
-        else:
-            self.white_background = False
-        self.model_matrix.pop_matrix()
-        self.model_matrix.add_nothing()
-    
+            self.view_matrix.pitch(delta_time)
+        if self.DOWN_key_down:
+            self.view_matrix.pitch(-delta_time)
+        if self.LEFT_key_down:
+            self.view_matrix.yaw(delta_time)
+        if self.RIGHT_key_down:
+            self.view_matrix.yaw(-delta_time)
+        if self.w_key_down:
+            self.view_matrix.slide(delN=-delta_time)
+        if self.s_key_down:
+            self.view_matrix.slide(delN=delta_time)
+        if self.a_key_down:
+            self.view_matrix.slide(delU=delta_time)
+        if self.d_key_down:
+            self.view_matrix.slide(delU=-delta_time)
+        if self.q_key_down:
+            self.view_matrix.roll(delta_time)
+        if self.e_key_down:
+            self.view_matrix.roll(-delta_time)
+        if self.r_key_down:
+            self.view_matrix.slide(delV=delta_time)
+        if self.f_key_down:
+            self.view_matrix.slide(delV=-delta_time)
+        
+        
+
+        
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  ### --- NEED THIS FOR NORMAL 3D BUT MANY EFFECTS BETTER WITH glDisable(GL_DEPTH_TEST) ... try it! --- ###
-        if self.white_background:
-            glClearColor(1.0, 1.0, 1.0, 1.0)
-        else:
-            glClearColor(0.0, 0.0, 0.0, 1.0)
+        
+        glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
 
-        glViewport(0, 0, 800, 600)
-
-        
+        glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
           ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
         #self.model_matrix.load_identity()
        # self.model_matrix.add_translation(0,0,-3)
+        self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
+        self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
 
-
-        self.model_matrix.push_matrix()
 
         pygame.display.flip()
 
@@ -126,10 +157,54 @@ class GraphicsProgram3D:
                         
                     if event.key == K_UP:
                         self.UP_key_down = True
+                    if event.key == K_DOWN: 
+                        self.DOWN_key_down = True
+                    if event.key == K_RIGHT:
+                        self.RIGHT_key_down = True
+                    if event.key == K_LEFT:
+                        self.LEFT_key_down = True
+                    if event.key == K_w:
+                        self.w_key_down = True
+                    if event.key == K_a:
+                        self.a_key_down = True
+                    if event.key == K_s:
+                        self.s_key_down = True
+                    if event.key == K_d:
+                        self.d_key_down = True
+                    if event.key == K_q:
+                        self.q_key_down = True
+                    if event.key == K_e:
+                        self.e_key_down = True
+                    if event.key == K_r:
+                        self.r_key_down = True
+                    if event.key == K_f:
+                        self.f_key_down = True
 
                 elif event.type == pygame.KEYUP:
                     if event.key == K_UP:
                         self.UP_key_down = False
+                    if event.key == K_DOWN: 
+                        self.DOWN_key_down = False
+                    if event.key == K_RIGHT:
+                        self.RIGHT_key_down = False
+                    if event.key == K_LEFT:
+                        self.LEFT_key_down = False
+                    if event.key == K_w:
+                        self.w_key_down = False
+                    if event.key == K_a:
+                        self.a_key_down = False
+                    if event.key == K_s:
+                        self.s_key_down = False
+                    if event.key == K_d:
+                        self.d_key_down = False
+                    if event.key == K_q:
+                        self.q_key_down = False
+                    if event.key == K_e:
+                        self.e_key_down = False
+                    if event.key == K_r:
+                        self.r_key_down = False
+                    if event.key == K_f:
+                        self.f_key_down = False
             
             self.update()
             self.display()

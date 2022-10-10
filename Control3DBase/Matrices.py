@@ -123,7 +123,7 @@ class ViewMatrix:
         self.eye = Point(0, 0, 0)
         self.u = Vector(1, 0, 0)
         self.v = Vector(0, 1, 0)
-        self.n = Vector(0, 0, 1)
+        self.n = Vector(0, 0, -1)
         self.up = Vector(0, 1, 0)
 
     ## MAKE OPERATIONS TO ADD LOOK, SLIDE, PITCH, YAW and ROLL ##
@@ -132,19 +132,41 @@ class ViewMatrix:
         if (not up) :up = self.up
         self.up = up
         self.n = self.eye - lookpoint
+        self.n.normalize()
         self.u = up.cross(self.n)
+        self.u.normalize()
         self.v = self.n.cross(self.u)
 
-    def slide(self, delU, delV,delN):
-        self.eye.x += delU* self.u.x + delV * self.v.x + delN * self.n.x
-        self.eye.y += delU* self.u.y + delV * self.v.y + delN * self.n.y
-        self.eye.z += delU* self.u.z + delV * self.v.z + delN * self.n.z
-    def pitch():
-        pass
-    def yaw():
-        pass
-    def roll():
-        pass
+    def slide(self, delU=0, delV=0,delN=0):
+        self.eye += self.u * delU + self.v * delV + self.n * delN
+
+    def roll(self,angle):
+        """we use radians!!!"""
+        angCos = cos(angle)
+        angSin = sin(angle)
+        newU=self.u*angCos+self.v*angSin
+        newV=self.u*(-angSin)+self.v*angCos
+        self.u=newU
+        self.v=newV   
+    
+    def pitch(self,angle):
+        """we use radians!!!"""
+        angCos = cos(angle)
+        angSin = sin(angle)
+        newV=self.n*angCos+self.v*angSin
+        newN=self.n*(-angSin)+self.v*angCos
+        self.v=newV
+        self.n=newN
+
+    def yaw(self,angle):
+        """we use radians!!!"""
+        angCos = cos(angle)
+        angSin = sin(angle)
+        newN=self.n*angCos+self.u*angSin
+        newU=self.n*(-angSin)+self.u*angCos
+        self.n=newN
+        self.u=newU
+        
 
     def get_matrix(self):
         minusEye = Vector(-self.eye.x, -self.eye.y, -self.eye.z)
@@ -170,6 +192,16 @@ class ProjectionMatrix:
 
     ## MAKE OPERATION TO SET PERSPECTIVE PROJECTION (don't forget to set is_orthographic to False) ##
     # ---
+    def set_perspective(self,fov,aspect,N,F):
+        self.is_orthographic = False
+        radfov = fov * pi / 180.0
+        self.top = tan(radfov/2)*N
+        self.bottom -self.top
+        self.right=self.top*aspect
+        self.left=-self.right
+        self.near = N
+        self.far = F
+        
 
     def set_orthographic(self, left, right, bottom, top, near, far):
         self.left = left
@@ -195,10 +227,17 @@ class ProjectionMatrix:
                     0,0,0,1]
 
         else:
-            pass
-            # Set up a matrix for a Perspective projection
-            ###  Remember that it's a non-linear transformation   ###
-            ###  so the bottom row is different                   ###
+            A = (2*self.near) / (self.right - self.left)
+            B = (self.right + self.left) / (self.right - self.left)
+            C = (2*self.near) / (self.top - self.bottom)
+            D = (self.top + self.bottom) / (self.top - self.bottom)
+            E = -(self.far + self.near) / (self.far - self.near)
+            F = -(2 * self.far * self.near) / (self.far - self.near)
+
+            return [A,0,B, 0,
+                    0,C,D, 0,
+                    0,0,E, F,
+                    0,0,-1,0]
 
 
 

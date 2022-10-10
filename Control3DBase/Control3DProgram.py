@@ -11,6 +11,37 @@ import time
 
 from Shaders import *
 from Matrices import *
+class GraphicalObject:
+    def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
+        self.object = shape
+        self.model_matrix = ModelMatrix()
+        self.model_matrix.load_identity()
+        self.model_matrix.add_scale(size[0],size[1],size[2])
+        self.model_matrix.add_translation(pos[0],pos[1],pos[2])
+        self.model_matrix.add_rotation(rotation[0],rotation[1],rotation[2])
+        self.model_matrix.push_matrix()
+        self.color = color
+        
+    def draw(self, shader):
+        shader.set_model_matrix(self.model_matrix.matrix)
+        shader.set_solid_color(self.color[0],self.color[1],self.color[2])
+        self.object.draw(shader)
+    def update(self, size = 0 ,pos = 0, rotation =0, color =0):
+        if color: self.color = color 
+        if size:
+            self.model_matrix.add_scale(size[0],size[1],size[2])
+        if pos:
+            self.model_matrix.add_translation(pos[0],pos[1],pos[2])
+        if rotation:
+            self.model_matrix.add_rotation(rotation[0],rotation[1],rotation[2])
+    def reset(self):
+        self.model_matrix.pop_matrix()
+        self.model_matrix.push_matrix()
+    def copy(self):
+        cpy = GraphicalObject(self.object,color=(self.color[0],self.color[1],self.color[2]))
+        cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
+        return cpy
+        
 
 class GraphicsProgram3D:
     def __init__(self):
@@ -25,10 +56,15 @@ class GraphicsProgram3D:
         self.model_matrix.push_matrix()
 
         self.projection_view_matrix = ProjectionViewMatrix()
+        self.projection_matrix = ProjectionMatrix()
+        self.view_matrix = ViewMatrix()
+        self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
+       
+
+
         self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
-
-        self.cube = Cube()
-
+        c = Cube()
+        self.objects = [GraphicalObject(c),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1))]
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
@@ -65,9 +101,11 @@ class GraphicsProgram3D:
         
 
           ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.shader.set_solid_color(1,0.5,0)
-        self.cube.draw(self.shader)
+        #self.model_matrix.load_identity()
+       # self.model_matrix.add_translation(0,0,-3)
+        for obj in self.objects:
+            obj.draw(self.shader)
+
 
         self.model_matrix.push_matrix()
 

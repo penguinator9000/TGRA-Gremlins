@@ -46,18 +46,20 @@ class ModelMatrix:
     # ---
 
     def add_translation(self,x=0,y=0,z=0):
-        other_matrix = [1, 0, 0, x,
-                        0, 1, 0, y,
-                        0, 0, 1, z,
-                        0, 0, 0, 1]
-        self.add_transformation(other_matrix)
+        if (x != 0 or y != 0 or z !=0 ):
+            other_matrix = [1, 0, 0, x,
+                            0, 1, 0, y,
+                            0, 0, 1, z,
+                            0, 0, 0, 1]
+            self.add_transformation(other_matrix)
     
     def add_scale(self,x=1,y=1,z=1):
-        other_matrix = [x, 0, 0, 0,
-                        0, y, 0, 0,
-                        0, 0, z, 0,
-                        0, 0, 0, 1]
-        self.add_transformation(other_matrix)
+        if (x != 1 or y != 1 or z !=1 ):
+            other_matrix = [x, 0, 0, 0,
+                            0, y, 0, 0,
+                            0, 0, z, 0,
+                            0, 0, 0, 1]
+            self.add_transformation(other_matrix)
     
     def add_rotation(self,xt=0,yt=0,zt=0):
         """rotation(radians) function were 
@@ -122,9 +124,27 @@ class ViewMatrix:
         self.u = Vector(1, 0, 0)
         self.v = Vector(0, 1, 0)
         self.n = Vector(0, 0, 1)
+        self.up = Vector(0, 1, 0)
 
     ## MAKE OPERATIONS TO ADD LOOK, SLIDE, PITCH, YAW and ROLL ##
     # ---
+    def look(self,lookpoint,up = 0):
+        if (not up) :up = self.up
+        self.up = up
+        self.n = self.eye - lookpoint
+        self.u = up.cross(self.n)
+        self.v = self.n.cross(self.u)
+
+    def slide(self, delU, delV,delN):
+        self.eye.x += delU* self.u.x + delV * self.v.x + delN * self.n.x
+        self.eye.y += delU* self.u.y + delV * self.v.y + delN * self.n.y
+        self.eye.z += delU* self.u.z + delV * self.v.z + delN * self.n.z
+    def pitch():
+        pass
+    def yaw():
+        pass
+    def roll():
+        pass
 
     def get_matrix(self):
         minusEye = Vector(-self.eye.x, -self.eye.y, -self.eye.z)
@@ -190,14 +210,29 @@ class ProjectionMatrix:
 
 class ProjectionViewMatrix:
     def __init__(self):
-        pass
-
-    def get_matrix(self):
-        return [ 0.45052942369783683,  0.0,  -0.15017647456594563,  0.0,
+        self.matrix = [ 0.45052942369783683,  0.0,  -0.15017647456594563,  0.0,
                 -0.10435451285616304,  0.5217725642808152,  -0.3130635385684891,  0.0,
                 -0.2953940042189954,  -0.5907880084379908,  -0.8861820126569863,  3.082884480118567,
                 -0.2672612419124244,  -0.5345224838248488,  -0.8017837257372732,  3.7416573867739413 ]
 
+    def get_matrix(self):
+        return self.matrix
+    def add_transformation(self, matrix2):
+        counter = 0
+        new_matrix = [0] * 16
+        for row in range(4):
+            for col in range(4):
+                for i in range(4):
+                    new_matrix[counter] += self.matrix[row*4 + i]*matrix2[col + 4*i]
+                counter += 1
+        self.matrix = new_matrix
+    def new_proj_view(self, pos, projection, view):
+        self.matrix =  [1, 0, 0, pos[0],
+                        0, 1, 0, pos[1],
+                        0, 0, 1, pos[2],
+                        0, 0, 0, 1]
+        self.add_transformation(view.get_matrix())
+        self.add_transformation(projection.get_matrix())
 
 # IDEAS FOR OPERATIONS AND TESTING:
 # if __name__ == "__main__":

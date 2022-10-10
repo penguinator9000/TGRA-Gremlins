@@ -105,7 +105,8 @@ class Cube:
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
-        ## ADD CODE HERE ##
+        shader.set_normal_attribute(self.normal_array)
         
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
-        ## ADD CODE HERE ##
+        for i in range(6):
+            glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
+        

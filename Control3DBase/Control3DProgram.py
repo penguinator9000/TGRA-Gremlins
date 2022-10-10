@@ -14,7 +14,6 @@ from Matrices import *
 
 class GraphicsProgram3D:
     def __init__(self):
-
         pygame.init() 
         pygame.display.set_mode((800,600), pygame.OPENGL|pygame.DOUBLEBUF)
 
@@ -22,6 +21,8 @@ class GraphicsProgram3D:
         self.shader.use()
 
         self.model_matrix = ModelMatrix()
+        self.model_matrix.load_identity()
+        self.model_matrix.push_matrix()
 
         self.projection_view_matrix = ProjectionViewMatrix()
         self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
@@ -43,16 +44,16 @@ class GraphicsProgram3D:
         self.angle += pi * delta_time
         # if angle > 2 * pi:
         #     angle -= (2 * pi)
-
         if self.UP_key_down:
             self.white_background = True
         else:
             self.white_background = False
+        self.model_matrix.pop_matrix()
+        self.model_matrix.add_nothing()
     
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  ### --- NEED THIS FOR NORMAL 3D BUT MANY EFFECTS BETTER WITH glDisable(GL_DEPTH_TEST) ... try it! --- ###
-
         if self.white_background:
             glClearColor(1.0, 1.0, 1.0, 1.0)
         else:
@@ -61,13 +62,14 @@ class GraphicsProgram3D:
 
         glViewport(0, 0, 800, 600)
 
-        self.model_matrix.load_identity()
+        
+
+          ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
+        self.shader.set_model_matrix(self.model_matrix.matrix)
+        self.shader.set_solid_color(1,0.5,0)
+        self.cube.draw(self.shader)
 
         self.model_matrix.push_matrix()
-        self.model_matrix.add_nothing()  ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
-        self.shader.set_model_matrix(self.model_matrix.matrix)
-        self.cube.draw(self.shader)
-        self.model_matrix.pop_matrix()
 
         pygame.display.flip()
 

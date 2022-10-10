@@ -45,6 +45,51 @@ class ModelMatrix:
     ## MAKE OPERATIONS TO ADD TRANLATIONS, SCALES AND ROTATIONS ##
     # ---
 
+    def add_translation(self,x=0,y=0,z=0):
+        other_matrix = [1, 0, 0, x,
+                        0, 1, 0, y,
+                        0, 0, 1, z,
+                        0, 0, 0, 1]
+        self.add_transformation(other_matrix)
+    
+    def add_scale(self,x=1,y=1,z=1):
+        other_matrix = [x, 0, 0, 0,
+                        0, y, 0, 0,
+                        0, 0, z, 0,
+                        0, 0, 0, 1]
+        self.add_transformation(other_matrix)
+    
+    def add_rotation(self,xt=0,yt=0,zt=0):
+        """rotation(radians) function were 
+        xt= angle in were x is stationary
+        yt= angle in were y is stationary
+        zt= angle in were z is stationary """
+        if xt:
+            cxt=math.cos(xt)
+            sxt=math.sin(xt)
+            xMatrix =      [1, 0, 0, 0,
+                            0, cxt, sxt, 0,
+                            0, -sxt, cxt, 0,
+                            0, 0, 0, 1]
+            self.add_transformation(xMatrix)
+        if yt:
+            cyt=math.cos(yt)
+            syt=math.sin(yt)
+            yMatrix =      [cyt, 0, -syt, 0,
+                            0, 1, 0, 0,
+                            syt, 0, cyt, 0,
+                            0, 0, 0, 1]
+            self.add_transformation(yMatrix)
+        if zt:
+            czt=math.cos(zt)
+            szt=math.sin(zt)
+            zMatrix =      [czt, szt, 0, 0,
+                            -szt, czt, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1]
+            self.add_transformation(zMatrix)
+    
+
     # YOU CAN TRY TO MAKE PUSH AND POP (AND COPY) LESS DEPENDANT ON GARBAGE COLLECTION
     # THAT CAN FIX SMOOTHNESS ISSUES ON SOME COMPUTERS
     def push_matrix(self):

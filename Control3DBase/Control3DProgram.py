@@ -135,6 +135,7 @@ class GraphicsProgram3D:
         #self.model_matrix.load_identity()
        # self.model_matrix.add_translation(0,0,-3)
         self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
+
         self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)

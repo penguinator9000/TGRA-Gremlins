@@ -123,7 +123,7 @@ class ViewMatrix:
         self.eye = Point(0, 0, 0)
         self.u = Vector(1, 0, 0)
         self.v = Vector(0, 1, 0)
-        self.n = Vector(0, 0, -1)
+        self.n = Vector(0, 0, 1)
         self.up = Vector(0, 1, 0)
 
     ## MAKE OPERATIONS TO ADD LOOK, SLIDE, PITCH, YAW and ROLL ##

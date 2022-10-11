@@ -14,26 +14,24 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 from Shaders import *
 from Matrices import *
-MAZE = []
+
+MAZE_Max=17
+
 import csv
-with open("maze.csv", 'r') as file:
-  csvreader = csv.reader(file)
-  first = True
-  for row in csvreader:
-    if first: first = False
-    else:
-        MAZE.append([(int(val)-2) for val in row])
+
 
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
         self.object = shape
         self.model_matrix = ModelMatrix()
         self.model_matrix.load_identity()
-        self.model_matrix.add_scale(size[0],size[1],size[2])
         self.model_matrix.add_translation(pos[0],pos[1],pos[2])
+        self.model_matrix.add_scale(size[0],size[1],size[2])
         self.model_matrix.add_rotation(rotation[0],rotation[1],rotation[2])
         self.model_matrix.push_matrix()
         self.color = color
+        self.pos=Point(pos[0],pos[1],pos[2])
+        self.size=Point(size[0],size[1],size[2])
         
     def draw(self, shader):
         shader.set_model_matrix(self.model_matrix.matrix)
@@ -41,10 +39,12 @@ class GraphicalObject:
         self.object.draw(shader)
     def update(self, size = 0 ,pos = 0, rotation =0, color =0):
         if color: self.color = color 
-        if size:
-            self.model_matrix.add_scale(size[0],size[1],size[2])
         if pos:
             self.model_matrix.add_translation(pos[0],pos[1],pos[2])
+            self.pos+=Point(pos[0]*self.size.x,pos[1]*self.size.y,pos[2]*self.size.z)
+        if size:
+            self.model_matrix.add_scale(size[0],size[1],size[2])
+            self.size=Point(self.size.x*size[0],self.size.y*size[1],self.size.z*size[2])
         if rotation:
             self.model_matrix.add_rotation(rotation[0],rotation[1],rotation[2])
     def reset(self):
@@ -83,17 +83,29 @@ class GraphicsProgram3D:
         self.view_matrix_3P = ViewMatrix()
         
         self.mini_map_projection_matrix = ProjectionMatrix()
-        self.mini_map_projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
+        self.mini_map_projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 100)
         self.mini_map_view_matrix = ViewMatrix()
         self.mini_map_view_matrix.eye = Point(0,3,0)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
 
         c = Cube()
+        self.maze=[[None for i in range(MAZE_Max+1)] for ii in range(MAZE_Max+1)]
+        self.mazeObjects =[]
+        with open(sys.path[0] + "/maze.csv", 'r') as file:
+            csvreader = csv.reader(file)
+            first = True
+            for row in csvreader:
+                if first: first = False
+                else:
+                    x,z = [(int(val)) for val in row]
+                    temp = GraphicalObject(c,pos=(x*2,1,z*2),size=(2,3,2),color=((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
+                    self.mazeObjects.append(temp)
+                    self.maze[x][z]=temp
+
         self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
-        self.mazeObjects = [GraphicalObject(c,pos=(x,0,z),size=(2,6,2),color=(0.25,0.10,0.50)) for x,z in MAZE]
-        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.5,0),size=(1000,1,1000))]
+        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))]
 
         '''
         for i in range(20):
@@ -102,7 +114,7 @@ class GraphicsProgram3D:
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
-        self.perspective_max=2
+        self.perspective_max=3
         self.perspective_view=0
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
@@ -124,7 +136,7 @@ class GraphicsProgram3D:
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
-
+        self.movement=Vector(0,0,0)
         if self.q_key_down:
             self.view_matrix.yaw(delta_time)
             self.Guy.update(rotation=(0,-delta_time,0))
@@ -132,16 +144,16 @@ class GraphicsProgram3D:
             self.view_matrix.yaw(-delta_time)
             self.Guy.update(rotation=(0,delta_time,0))
         if self.w_key_down:
-            self.view_matrix.slide(delN=-delta_time)
+            self.movement+=self.view_matrix.slide(delN=-delta_time)
             self.Guy.update(pos=(0,0,-delta_time))
         if self.s_key_down:
-            self.view_matrix.slide(delN=delta_time)
+            self.movement+=self.view_matrix.slide(delN=delta_time)
             self.Guy.update(pos=(0,0,delta_time))
         if self.a_key_down:
-            self.view_matrix.slide(delU=-delta_time)
+            self.movement+=self.view_matrix.slide(delU=-delta_time)
             self.Guy.update(pos=(-delta_time,0,0))
         if self.d_key_down:
-            self.view_matrix.slide(delU=delta_time)
+            self.movement+=self.view_matrix.slide(delU=delta_time)
             self.Guy.update(pos=(delta_time,0,0))
             
 
@@ -171,7 +183,7 @@ class GraphicsProgram3D:
         #     self.view_matrix.slide(delV=-delta_time)as
         
         self.mini_map_view_matrix.eye=self.view_matrix.eye
-        self.mini_map_view_matrix.slide(delN=3)
+        self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
         self.view_matrix_3P.eye=self.view_matrix.eye+(self.view_matrix.n*0.5)+(self.view_matrix.v*0.5)
         self.view_matrix_3P.look(self.view_matrix.eye,Vector(0,1,0))
@@ -179,7 +191,7 @@ class GraphicsProgram3D:
 
         self.Guy2 = self.Guy.copy()
         self.Guy2.update(self.Guy2update[0],self.Guy2update[1],self.Guy2update[2],self.Guy2update[3])
-        
+        print(self.view_matrix.eye)
 
         
 
@@ -189,7 +201,7 @@ class GraphicsProgram3D:
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
-        glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+        glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
         for obj in self.objects:
@@ -198,16 +210,11 @@ class GraphicsProgram3D:
             obj.draw(self.shader)
         self.Guy2.draw(self.shader)
         
-
-
-        
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-
-          ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
-        #self.model_matrix.load_identity()
-       # self.model_matrix.add_translation(0,0,-3)
         if self.perspective_view == 1:
             self.shader.set_view_matrix(self.view_matrix_3P.get_matrix())
+        elif self.perspective_view==2:
+            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
         else:
             self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
@@ -233,7 +240,7 @@ class GraphicsProgram3D:
                         exiting = True
 
                     if event.key == K_SPACE:
-                        self.perspective_view = (self.perspective_view+1)%self.perspective_max
+                        self.perspective_view = (self.perspective_view+1)%self.perspective_max 
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 

@@ -14,6 +14,15 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 from Shaders import *
 from Matrices import *
+MAZE = []
+import csv
+with open("maze.csv", 'r') as file:
+  csvreader = csv.reader(file)
+  first = True
+  for row in csvreader:
+    if first: first = False
+    else:
+        MAZE.append([(int(val)-2) for val in row])
 
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
@@ -83,9 +92,13 @@ class GraphicsProgram3D:
         self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
+        self.mazeObjects = [GraphicalObject(c,pos=(x,0,z),size=(2,6,2),color=(0.25,0.10,0.50)) for x,z in MAZE]
         self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.5,0),size=(1000,1,1000))]
+
+        '''
         for i in range(20):
             self.objects.append(GraphicalObject(c,pos=(i-(i%2),0,i-((i+1)%2)),size=(1,3,1)))
+        '''
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
@@ -181,6 +194,8 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
+        for obj in self.mazeObjects:
+            obj.draw(self.shader)
         self.Guy2.draw(self.shader)
         
 
@@ -197,6 +212,8 @@ class GraphicsProgram3D:
             self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
         for obj in self.objects:
+            obj.draw(self.shader)
+        for obj in self.mazeObjects:
             obj.draw(self.shader)
         self.Guy2.draw(self.shader)
         pygame.display.flip()

@@ -104,10 +104,10 @@ class GraphicsProgram3D:
     def update(self):
         delta_time = self.clock.tick() / 1000.0
 
-        if self.a_key_down:
+        if self.q_key_down:
             self.view_matrix.yaw(delta_time)
             self.Guy.update(rotation=(0,-delta_time,0))
-        if self.d_key_down:
+        if self.e_key_down:
             self.view_matrix.yaw(-delta_time)
             self.Guy.update(rotation=(0,delta_time,0))
         if self.w_key_down:
@@ -116,10 +116,10 @@ class GraphicsProgram3D:
         if self.s_key_down:
             self.view_matrix.slide(delN=delta_time)
             self.Guy.update(pos=(0,0,delta_time))
-        if self.LEFT_key_down:
+        if self.a_key_down:
             self.view_matrix.slide(delU=-delta_time)
             self.Guy.update(pos=(-delta_time,0,0))
-        if self.RIGHT_key_down:
+        if self.d_key_down:
             self.view_matrix.slide(delU=delta_time)
             self.Guy.update(pos=(delta_time,0,0))
             

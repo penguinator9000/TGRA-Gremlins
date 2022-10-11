@@ -305,7 +305,8 @@ class GraphicsProgram3D:
         if vector.x<0: vx=-1
         elif vector.x>0: vx=1
         else: vx=0
-        
+        XL = int((pWas.x+vx*leeway)//2)
+        ZL = int((pWas.z+vz*leeway)//2)
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
@@ -324,7 +325,6 @@ class GraphicsProgram3D:
             q = self.query_maze(X+vx,Z+vz)
             if q:
                 print("box xz:",q.pos)
-                
         ''' 
         ret = []
             if vx and vz:

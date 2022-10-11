@@ -300,6 +300,45 @@ class GraphicsProgram3D:
 
     def start(self):
         self.program_loop()
+    
+    def query_maze(self,x,z):
+        X=x//2
+        Z=z//2
+        R=range(MAZE_Max+1)
+        if X in R and Z in R:
+            return self.maze[X][Z]
+        else:
+            return 0
+    
+    def multy_query_maze(self,pNow,vector):
+        """The piont is were you want to be vector is how you got there"""
+        pWas = pNow+(vector*(-1))
+        X=pWas.x//2
+        Z=pWas.z//2
+        
+        if vector.x<0: vx=-1
+        elif vector.x>0: vx=1
+        else: vx=0
+        
+        if vector.z<0: vz=-1
+        elif vector.z>0: vz=1
+        else: vz=0
+
+        ret=[]
+        if vx and vz:
+            for t in [(X+vx,Z+vz),(X,Z+vz),(X+vx)]:
+                q = self.query_maze(t[0],t[1])
+                if q:
+                    ret.append(q)
+        else:
+            q = self.query_maze(X+vx,Z+vz)
+            if q:
+                ret.append(q)
+        return ret
+            
+
+
+
 
 if __name__ == "__main__":
     GraphicsProgram3D().start()

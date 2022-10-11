@@ -1,6 +1,7 @@
 
 # from OpenGL.GL import *
 # from OpenGL.GLU import *
+from ctypes import pointer
 from math import *
 from turtle import Screen
 
@@ -59,15 +60,18 @@ class GraphicsProgram3D:
         # self.model_matrix.push_matrix()
 
         self.projection_matrix = ProjectionMatrix()
-        self.projection_matrix.set_perspective(fov=90,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.5,F=100)
+        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.5,F=50)
         
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
         #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
-       
+        self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
+        self.view_matrix.eye=Point(0,0.5,0)
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+
+        self.view_matrix_3P = ViewMatrix()
         
         self.mini_map_projection_matrix = ProjectionMatrix()
         self.mini_map_projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
@@ -77,12 +81,16 @@ class GraphicsProgram3D:
 
         c = Cube()
         self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
+        self.Guy2= self.Guy.copy()
+        self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
         self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.5,0),size=(1000,1,1000))]
-        
+        for i in range(20):
+            self.objects.append(GraphicalObject(c,pos=(i-(i%2),0,i-((i+1)%2)),size=(1,3,1)))
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
-
+        self.perspective_max=2
+        self.perspective_view=0
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -147,11 +155,17 @@ class GraphicsProgram3D:
         # if self.r_key_down:
         #     self.view_matrix.slide(delV=delta_time)
         # if self.f_key_down:
-        #     self.view_matrix.slide(delV=-delta_time)
+        #     self.view_matrix.slide(delV=-delta_time)as
         
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=3)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
+        self.view_matrix_3P.eye=self.view_matrix.eye+(self.view_matrix.n*0.5)+(self.view_matrix.v*0.5)
+        self.view_matrix_3P.look(self.view_matrix.eye,Vector(0,1,0))
+
+
+        self.Guy2 = self.Guy.copy()
+        self.Guy2.update(self.Guy2update[0],self.Guy2update[1],self.Guy2update[2],self.Guy2update[3])
         
 
         
@@ -161,28 +175,30 @@ class GraphicsProgram3D:
         
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
-        pygame.display.gl_set_attribute(GL_DEPTH_SIZE,8)
+        
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
-        print(pygame.display.gl_get_attribute(GL_DEPTH_SIZE))
+        self.Guy2.draw(self.shader)
+        
 
 
-        pygame.display.gl_set_attribute(GL_DEPTH_SIZE,16)
+        
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
-        print(pygame.display.gl_get_attribute(GL_DEPTH_SIZE))
-
 
           ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
         #self.model_matrix.load_identity()
        # self.model_matrix.add_translation(0,0,-3)
-        
-        self.shader.set_view_matrix(self.view_matrix.get_matrix())
+        if self.perspective_view == 1:
+            self.shader.set_view_matrix(self.view_matrix_3P.get_matrix())
+        else:
+            self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
+        self.Guy2.draw(self.shader)
         pygame.display.flip()
         
 
@@ -198,7 +214,9 @@ class GraphicsProgram3D:
                     if event.key == K_ESCAPE:
                         print("Escaping!")
                         exiting = True
-                        
+
+                    if event.key == K_SPACE:
+                        self.perspective_view = (self.perspective_view+1)%self.perspective_max
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 

@@ -196,8 +196,7 @@ class ProjectionMatrix:
     # ---
     def set_perspective(self,fov,aspect,N,F):
         self.is_orthographic = False
-        radfov = fov * pi / 180.0
-        self.top = tan(radfov/2)*N
+        self.top = N*tan((fov * (pi / 180.0))/2)
         self.bottom -self.top
         self.right=self.top*aspect
         self.left=-self.right
@@ -235,7 +234,6 @@ class ProjectionMatrix:
             D = (self.top + self.bottom) / (self.top - self.bottom)
             E = -(self.far + self.near) / (self.far - self.near)
             F = -(2 * self.far * self.near) / (self.far - self.near)
-
             return [A,0,B, 0,
                     0,C,D, 0,
                     0,0,E, F,

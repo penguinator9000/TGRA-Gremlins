@@ -129,8 +129,7 @@ class ViewMatrix:
 
     ## MAKE OPERATIONS TO ADD LOOK, SLIDE, PITCH, YAW and ROLL ##
     # ---
-    def look(self,lookpoint,up = 0):
-        if (not up) :up = self.up
+    def look(self,lookpoint,up):
         self.up = up
         self.n = self.eye - lookpoint
         self.n.normalize()
@@ -139,7 +138,7 @@ class ViewMatrix:
         self.v = self.n.cross(self.u)
         self.v.normalize()
 
-    def slide(self, delU=0, delV=0,delN=0):
+    def slide(self, delU=0, delV=0, delN=0):
         self.eye += self.u * delU + self.v * delV + self.n * delN
 
     def roll(self,angle):
@@ -259,22 +258,22 @@ class ProjectionViewMatrix:
 
     def get_matrix(self):
         return self.matrix
-    def add_transformation(self, matrix2):
-        counter = 0
-        new_matrix = [0] * 16
-        for row in range(4):
-            for col in range(4):
-                for i in range(4):
-                    new_matrix[counter] += self.matrix[row*4 + i]*matrix2[col + 4*i]
-                counter += 1
-        self.matrix = new_matrix
-    def new_proj_view(self, pos, projection, view):
-        self.matrix =  [1, 0, 0, pos[0],
-                        0, 1, 0, pos[1],
-                        0, 0, 1, pos[2],
-                        0, 0, 0, 1]
-        self.add_transformation(view.get_matrix())
-        self.add_transformation(projection.get_matrix())
+    # def add_transformation(self, matrix2):
+    #     counter = 0
+    #     new_matrix = [0] * 16
+    #     for row in range(4):
+    #         for col in range(4):
+    #             for i in range(4):
+    #                 new_matrix[counter] += self.matrix[row*4 + i]*matrix2[col + 4*i]
+    #             counter += 1
+    #     self.matrix = new_matrix
+    # def new_proj_view(self, pos, projection, view):
+    #     self.matrix =  [1, 0, 0, pos[0],
+    #                     0, 1, 0, pos[1],
+    #                     0, 0, 1, pos[2],
+    #                     0, 0, 0, 1]
+    #     self.add_transformation(view.get_matrix())
+    #     self.add_transformation(projection.get_matrix())
 
 # IDEAS FOR OPERATIONS AND TESTING:
 # if __name__ == "__main__":

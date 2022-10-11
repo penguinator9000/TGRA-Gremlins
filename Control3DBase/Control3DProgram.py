@@ -59,19 +59,30 @@ class GraphicsProgram3D:
         # self.model_matrix.push_matrix()
 
         self.projection_matrix = ProjectionMatrix()
+        self.projection_matrix.set_perspective(fov=90,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.5,F=100)
+        
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
-        self.projection_matrix.set_perspective(90,SCREEN_WIDTH/SCREEN_HEIGHT,0.5,100)
         
         self.view_matrix = ViewMatrix()
         #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
        
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+        
+        self.mini_map_projection_matrix = ProjectionMatrix()
+        self.mini_map_projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
+        self.mini_map_view_matrix = ViewMatrix()
+        self.mini_map_view_matrix.eye = Point(0,3,0)
+        self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
+
         c = Cube()
-        d8=D8()
-        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(d8,color=(0,0.5,1)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.5,0),size=(1000,1,1000))]
+        self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
+        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.5,0),size=(1000,1,1000))]
+        
         self.clock = pygame.time.Clock()
         self.clock.tick()
+
+
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -93,31 +104,54 @@ class GraphicsProgram3D:
     def update(self):
         delta_time = self.clock.tick() / 1000.0
 
-        if self.UP_key_down:
-            self.view_matrix.pitch(delta_time)
-        if self.DOWN_key_down:
-            self.view_matrix.pitch(-delta_time)
-        if self.LEFT_key_down:
+        if self.a_key_down:
             self.view_matrix.yaw(delta_time)
-        if self.RIGHT_key_down:
+            self.Guy.update(rotation=(0,-delta_time,0))
+        if self.d_key_down:
             self.view_matrix.yaw(-delta_time)
+            self.Guy.update(rotation=(0,delta_time,0))
         if self.w_key_down:
             self.view_matrix.slide(delN=-delta_time)
+            self.Guy.update(pos=(0,0,-delta_time))
         if self.s_key_down:
             self.view_matrix.slide(delN=delta_time)
-        if self.a_key_down:
+            self.Guy.update(pos=(0,0,delta_time))
+        if self.LEFT_key_down:
             self.view_matrix.slide(delU=-delta_time)
-        if self.d_key_down:
+            self.Guy.update(pos=(-delta_time,0,0))
+        if self.RIGHT_key_down:
             self.view_matrix.slide(delU=delta_time)
-        if self.q_key_down:
-            self.view_matrix.roll(delta_time)
-        if self.e_key_down:
-            self.view_matrix.roll(-delta_time)
-        if self.r_key_down:
-            self.view_matrix.slide(delV=delta_time)
-        if self.f_key_down:
-            self.view_matrix.slide(delV=-delta_time)
+            self.Guy.update(pos=(delta_time,0,0))
+            
+
+        # if self.UP_key_down:
+        #     self.view_matrix.pitch(delta_time)
+        # if self.DOWN_key_down:
+        #     self.view_matrix.pitch(-delta_time)
+        # if self.LEFT_key_down:
+        #     self.view_matrix.yaw(delta_time)
+        # if self.RIGHT_key_down:
+        #     self.view_matrix.yaw(-delta_time)
+        # if self.w_key_down:
+        #     self.view_matrix.slide(delN=-delta_time)
+        # if self.s_key_down:
+        #     self.view_matrix.slide(delN=delta_time)
+        # if self.a_key_down:
+        #     self.view_matrix.slide(delU=-delta_time)
+        # if self.d_key_down:
+        #     self.view_matrix.slide(delU=delta_time)
+        # if self.q_key_down:
+        #     self.view_matrix.roll(delta_time)
+        # if self.e_key_down:
+        #     self.view_matrix.roll(-delta_time)
+        # if self.r_key_down:
+        #     self.view_matrix.slide(delV=delta_time)
+        # if self.f_key_down:
+        #     self.view_matrix.slide(delV=-delta_time)
         
+        self.mini_map_view_matrix.eye=self.view_matrix.eye
+        self.mini_map_view_matrix.slide(delN=3)
+        self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
         
 
         
@@ -127,23 +161,26 @@ class GraphicsProgram3D:
         
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
-        
+        pygame.display.gl_set_attribute(GL_DEPTH_SIZE,8)
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
-        self.shader.set_view_matrix(self.view_matrix.get_matrix())
-        self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
+        self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
+        print(pygame.display.gl_get_attribute(GL_DEPTH_SIZE))
 
 
-        
+        pygame.display.gl_set_attribute(GL_DEPTH_SIZE,16)
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
+        print(pygame.display.gl_get_attribute(GL_DEPTH_SIZE))
+
 
           ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
         #self.model_matrix.load_identity()
        # self.model_matrix.add_translation(0,0,-3)
         
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
-        #self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+        self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
         pygame.display.flip()

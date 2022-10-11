@@ -31,7 +31,7 @@ class GraphicalObject:
         self.model_matrix.push_matrix()
         self.color = color
         self.pos=Point(pos[0],pos[1],pos[2])
-        self.size=Point(size[0],size[1],size[2])
+        self.size=Vector(size[0],size[1],size[2])
         
     def draw(self, shader):
         shader.set_model_matrix(self.model_matrix.matrix)
@@ -69,7 +69,7 @@ class GraphicsProgram3D:
         # self.model_matrix.push_matrix()
 
         self.projection_matrix = ProjectionMatrix()
-        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.5,F=50)
+        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
         
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
@@ -102,7 +102,8 @@ class GraphicsProgram3D:
                     self.mazeObjects.append(temp)
                     self.maze[x][z]=temp
 
-        self.Guy= GraphicalObject(D8(),color=(0,0.5,1),pos=(2,0,2))
+        self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
+        self.GuyRotation = 0
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
         self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))]
@@ -139,45 +140,34 @@ class GraphicsProgram3D:
     def update(self):
         delta_time = self.clock.tick() / 1000.0
         self.movement=Vector(0,0,0)
-        movedx = 0
-        movedz = 0
-        fuck = False
+        
         if self.q_key_down:
             self.view_matrix.yaw(delta_time)
-            self.Guy.update(rotation=(0,-delta_time,0))
+            self.GuyRotation+=-delta_time
+            
         if self.e_key_down:
             self.view_matrix.yaw(-delta_time)
-            self.Guy.update(rotation=(0,delta_time,0))
+            self.GuyRotation+=delta_time
+            
         if self.w_key_down:
-            #self.movement+=self.view_matrix.slide(delN=-delta_time)
-            #self.Guy.update(pos=(0,0,-delta_time))
-            movedz += -delta_time
-            fuck = True
+            self.movement+=self.view_matrix.slide(delN=-delta_time)
+        
         if self.s_key_down:
-            #self.movement+=self.view_matrix.slide(delN=delta_time)
-            #self.Guy.update(pos=(0,0,delta_time))
-            movedz += delta_time
-            fuck = True
+            self.movement+=self.view_matrix.slide(delN=delta_time)
+        
         if self.a_key_down:
-            #self.movement+=self.view_matrix.slide(delU=-delta_time)
-            #self.Guy.update(pos=(-delta_time,0,0))
-            movedx += -delta_time
-            fuck = True
+            self.movement+=self.view_matrix.slide(delU=-delta_time)
+        
         if self.d_key_down:
-            fuck = True
-            #self.movement+=self.view_matrix.slide(delU=delta_time)
-            #self.Guy.update(pos=(delta_time,0,0))
-            movedx += delta_time
-        #fuck x axis
-        if fuck:
-            lastpoint = self.view_matrix.eye
-            self.movement+=self.view_matrix.slide(delU=movedx,delN=movedz)
-            nextpoint = self.view_matrix.eye
-            #print ("vectpr", nextpoint -lastpoint)
-            #print (self.movement)
-            self.maze_collision(nextpoint, self.movement)
+            self.movement+=self.view_matrix.slide(delU=delta_time)
+        
+        if self.movement==Vector(0,0,0):
+            self.maze_collision(self.view_matrix.eye, self.movement)
 
-
+        self.GuyRotation=self.GuyRotation%(pi*2)
+        self.Guy.reset()
+        self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,0,self.view_matrix.eye.z))
+        
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
@@ -187,7 +177,6 @@ class GraphicsProgram3D:
 
         self.Guy2 = self.Guy.copy()
         self.Guy2.update(self.Guy2update[0],self.Guy2update[1],self.Guy2update[2],self.Guy2update[3])
-        #print(self.view_matrix.eye)
 
         
 

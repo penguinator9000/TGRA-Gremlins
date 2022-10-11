@@ -106,7 +106,9 @@ class GraphicsProgram3D:
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
         self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))]
-
+        initialroatate = pi*1.25
+        self.view_matrix.yaw(initialroatate)
+        self.Guy.update(rotation=(0,-initialroatate,0))
         '''
         for i in range(20):
             self.objects.append(GraphicalObject(c,pos=(i-(i%2),0,i-((i+1)%2)),size=(1,3,1)))
@@ -137,6 +139,9 @@ class GraphicsProgram3D:
     def update(self):
         delta_time = self.clock.tick() / 1000.0
         self.movement=Vector(0,0,0)
+        movedx = 0
+        movedz = 0
+        fuck = False
         if self.q_key_down:
             self.view_matrix.yaw(delta_time)
             self.Guy.update(rotation=(0,-delta_time,0))
@@ -144,44 +149,35 @@ class GraphicsProgram3D:
             self.view_matrix.yaw(-delta_time)
             self.Guy.update(rotation=(0,delta_time,0))
         if self.w_key_down:
-            self.movement+=self.view_matrix.slide(delN=-delta_time)
-            self.Guy.update(pos=(0,0,-delta_time))
+            #self.movement+=self.view_matrix.slide(delN=-delta_time)
+            #self.Guy.update(pos=(0,0,-delta_time))
+            movedz += -delta_time
+            fuck = True
         if self.s_key_down:
-            self.movement+=self.view_matrix.slide(delN=delta_time)
-            self.Guy.update(pos=(0,0,delta_time))
+            #self.movement+=self.view_matrix.slide(delN=delta_time)
+            #self.Guy.update(pos=(0,0,delta_time))
+            movedz += delta_time
+            fuck = True
         if self.a_key_down:
-            self.movement+=self.view_matrix.slide(delU=-delta_time)
-            self.Guy.update(pos=(-delta_time,0,0))
+            #self.movement+=self.view_matrix.slide(delU=-delta_time)
+            #self.Guy.update(pos=(-delta_time,0,0))
+            movedx += -delta_time
+            fuck = True
         if self.d_key_down:
-            self.movement+=self.view_matrix.slide(delU=delta_time)
-            self.Guy.update(pos=(delta_time,0,0))
-            
+            fuck = True
+            #self.movement+=self.view_matrix.slide(delU=delta_time)
+            #self.Guy.update(pos=(delta_time,0,0))
+            movedx += delta_time
+        #fuck x axis
+        if fuck:
+            lastpoint = self.view_matrix.eye
+            self.movement+=self.view_matrix.slide(delU=movedx,delN=movedz)
+            nextpoint = self.view_matrix.eye
+            #print ("vectpr", nextpoint -lastpoint)
+            #print (self.movement)
+            self.maze_collision(nextpoint, self.movement)
 
-        # if self.UP_key_down:
-        #     self.view_matrix.pitch(delta_time)
-        # if self.DOWN_key_down:
-        #     self.view_matrix.pitch(-delta_time)
-        # if self.LEFT_key_down:
-        #     self.view_matrix.yaw(delta_time)
-        # if self.RIGHT_key_down:
-        #     self.view_matrix.yaw(-delta_time)
-        # if self.w_key_down:
-        #     self.view_matrix.slide(delN=-delta_time)
-        # if self.s_key_down:
-        #     self.view_matrix.slide(delN=delta_time)
-        # if self.a_key_down:
-        #     self.view_matrix.slide(delU=-delta_time)
-        # if self.d_key_down:
-        #     self.view_matrix.slide(delU=delta_time)
-        # if self.q_key_down:
-        #     self.view_matrix.roll(delta_time)
-        # if self.e_key_down:
-        #     self.view_matrix.roll(-delta_time)
-        # if self.r_key_down:
-        #     self.view_matrix.slide(delV=delta_time)
-        # if self.f_key_down:
-        #     self.view_matrix.slide(delV=-delta_time)as
-        
+
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
@@ -191,7 +187,7 @@ class GraphicsProgram3D:
 
         self.Guy2 = self.Guy.copy()
         self.Guy2.update(self.Guy2update[0],self.Guy2update[1],self.Guy2update[2],self.Guy2update[3])
-        print(self.view_matrix.eye)
+        #print(self.view_matrix.eye)
 
         
 
@@ -310,11 +306,12 @@ class GraphicsProgram3D:
         else:
             return 0
     
-    def multy_query_maze(self,pNow,vector):
-        """The piont is were you want to be vector is how you got there"""
+    def maze_collision(self,pNow,vector):
+        """The point is were you want to be vector is how you got there"""
         pWas = pNow+(vector*(-1))
-        X=pWas.x//2
-        Z=pWas.z//2
+        X= int(pWas.x//2)
+        Z= int(pWas.z//2)
+        leeway = 0.25
         
         if vector.x<0: vx=-1
         elif vector.x>0: vx=1
@@ -323,9 +320,25 @@ class GraphicsProgram3D:
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
-
-        ret=[]
+        print("cam here ",pNow)
+        print("index: ",X,Z)
+        if vx:
+            q = self.query_maze(X+vx,Z)
+            if q:
+                print("box x:",q.pos)
+        if vz:
+            q = self.query_maze(X,Z+vz)
+            if q:
+                print("box z:",q.pos)
+    
         if vx and vz:
+            q = self.query_maze(X+vx,Z+vz)
+            if q:
+                print("box xz:",q.pos)
+                
+        ''' 
+        ret = []
+            if vx and vz:
             for t in [(X+vx,Z+vz),(X,Z+vz),(X+vx)]:
                 q = self.query_maze(t[0],t[1])
                 if q:
@@ -334,7 +347,9 @@ class GraphicsProgram3D:
             q = self.query_maze(X+vx,Z+vz)
             if q:
                 ret.append(q)
-        return ret
+        return ret'''
+   
+
             
 
 

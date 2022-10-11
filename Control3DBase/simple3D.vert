@@ -2,7 +2,8 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 
 uniform mat4 u_model_matrix;
-uniform mat4 u_projection_view_matrix;
+uniform mat4 u_view_matrix;
+uniform mat4 u_projection_matrix;
 
 uniform vec4 u_color;
 
@@ -20,8 +21,8 @@ void main(void)
 	float light_factor_2 = max(dot(normalize(normal), normalize(vec4(-3, -2, -1, 0))), 0.0);
 	v_color = (light_factor_1 + light_factor_2) * u_color; // ### --- Change this vector (pure white) to color variable --- #####
 
-	// ### --- Change the projection_view_matrix to separate view and projection matrices --- ### 
-	position = u_projection_view_matrix * position;
+	position = u_view_matrix * position;
+	position = u_projection_matrix * position;
 
 	gl_Position = position;
 }

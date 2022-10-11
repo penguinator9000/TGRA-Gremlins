@@ -13,6 +13,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 from Shaders import *
 from Matrices import *
+
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
         self.object = shape
@@ -53,24 +54,22 @@ class GraphicsProgram3D:
         self.shader = Shader3D()
         self.shader.use()
 
-        self.model_matrix = ModelMatrix()
-        self.model_matrix.load_identity()
-        self.model_matrix.push_matrix()
+        # self.model_matrix = ModelMatrix()
+        # self.model_matrix.load_identity()
+        # self.model_matrix.push_matrix()
 
-        self.projection_view_matrix = ProjectionViewMatrix()
         self.projection_matrix = ProjectionMatrix()
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         self.projection_matrix.set_perspective(90,SCREEN_WIDTH/SCREEN_HEIGHT,0.5,100)
         
         self.view_matrix = ViewMatrix()
-        self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
+        #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
        
-
-
-        self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
+        self.shader.set_view_matrix(self.view_matrix.get_matrix())
+        self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
         c = Cube()
         d8=D8()
-        self.objects = [GraphicalObject(c),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(d8,color=(1,1,0),pos=(-1,0,1))]
+        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(d8,color=(0,0.5,1)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.5,0),size=(1000,1,1000))]
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
@@ -107,9 +106,9 @@ class GraphicsProgram3D:
         if self.s_key_down:
             self.view_matrix.slide(delN=delta_time)
         if self.a_key_down:
-            self.view_matrix.slide(delU=delta_time)
-        if self.d_key_down:
             self.view_matrix.slide(delU=-delta_time)
+        if self.d_key_down:
+            self.view_matrix.slide(delU=delta_time)
         if self.q_key_down:
             self.view_matrix.roll(delta_time)
         if self.e_key_down:
@@ -128,20 +127,27 @@ class GraphicsProgram3D:
         
         glClearColor(0.0, 0.0, 0.0, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
+        
+        glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT-SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+        self.shader.set_view_matrix(self.view_matrix.get_matrix())
+        self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+        for obj in self.objects:
+            obj.draw(self.shader)
 
+
+        
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
 
           ### --- ADD PROPER TRANSFORMATION OPERATIONS --- ###
         #self.model_matrix.load_identity()
        # self.model_matrix.add_translation(0,0,-3)
-        self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
-
-        self.shader.set_projection_view_matrix(self.projection_view_matrix.get_matrix())
+        
+        self.shader.set_view_matrix(self.view_matrix.get_matrix())
+        #self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
         for obj in self.objects:
             obj.draw(self.shader)
-
-
         pygame.display.flip()
+        
 
     def program_loop(self):
         exiting = False

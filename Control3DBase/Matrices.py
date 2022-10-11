@@ -1,5 +1,6 @@
 
-from math import * # trigonometry
+from math import *
+
 
 from Base3DObjects import *
 
@@ -136,6 +137,7 @@ class ViewMatrix:
         self.u = up.cross(self.n)
         self.u.normalize()
         self.v = self.n.cross(self.u)
+        self.v.normalize()
 
     def slide(self, delU=0, delV=0,delN=0):
         self.eye += self.u * delU + self.v * delV + self.n * delN
@@ -153,8 +155,9 @@ class ViewMatrix:
         """we use radians!!!"""
         angCos = cos(angle)
         angSin = sin(angle)
-        newV=self.n*angCos+self.v*angSin
-        newN=self.n*(-angSin)+self.v*angCos
+        newN=self.n*angCos+self.v*angSin
+        newV=self.n*(-angSin)+self.v*angCos
+        print(angle,newN,newV)
         self.v=newV
         self.n=newN
 

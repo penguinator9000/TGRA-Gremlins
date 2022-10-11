@@ -50,7 +50,8 @@ class Vector:
 
     def cross(self, other):
         return Vector(self.y*other.z - self.z*other.y, self.z*other.x - self.x*other.z, self.x*other.y - self.y*other.x)
-
+    def __str__(self) -> str:
+        return "|x:"+str(self.x)+", y:"+str(self.y)+", z:"+str(self.y)+" |"
 class Cube:
     def __init__(self):
         self.position_array = [-0.5, -0.5, -0.5,
@@ -173,8 +174,8 @@ class Plane:
     def __init__(self):
         self.position_array = [-0.5, 0,-0.5,
                                -0.5, 0, 0.5,
-                                0.5, 0,-0.5,
                                 0.5, 0, 0.5,
+                                0.5, 0,-0.5,
                             ]
         self.normal_array = [0.0,-1.0,0.0,
                              0.0,-1.0,0.0,

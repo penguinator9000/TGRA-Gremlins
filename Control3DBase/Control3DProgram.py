@@ -76,7 +76,7 @@ class GraphicsProgram3D:
         self.view_matrix = ViewMatrix()
         #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
-        self.view_matrix.eye=Point(0,0.5,0)
+        self.view_matrix.eye=Point(2,0.5,2)
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
@@ -85,7 +85,7 @@ class GraphicsProgram3D:
         self.mini_map_projection_matrix = ProjectionMatrix()
         self.mini_map_projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 100)
         self.mini_map_view_matrix = ViewMatrix()
-        self.mini_map_view_matrix.eye = Point(0,3,0)
+        self.mini_map_view_matrix.eye = Point(2,3,2)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
 
         c = Cube()
@@ -102,7 +102,7 @@ class GraphicsProgram3D:
                     self.mazeObjects.append(temp)
                     self.maze[x][z]=temp
 
-        self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
+        self.Guy= GraphicalObject(D8(),color=(0,0.5,1),pos=(2,0,2))
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
         self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))]

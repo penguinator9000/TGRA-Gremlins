@@ -1,5 +1,6 @@
 
-from math import * # trigonometry
+from math import *
+
 
 from Base3DObjects import *
 
@@ -128,17 +129,18 @@ class ViewMatrix:
 
     ## MAKE OPERATIONS TO ADD LOOK, SLIDE, PITCH, YAW and ROLL ##
     # ---
-    def look(self,lookpoint,up = 0):
-        if (not up) :up = self.up
+    def look(self,lookpoint,up):
         self.up = up
         self.n = self.eye - lookpoint
         self.n.normalize()
         self.u = up.cross(self.n)
         self.u.normalize()
         self.v = self.n.cross(self.u)
+        self.v.normalize()
 
-    def slide(self, delU=0, delV=0,delN=0):
+    def slide(self, delU=0, delV=0, delN=0):
         self.eye += self.u * delU + self.v * delV + self.n * delN
+        return self.u * delU + self.v * delV + self.n * delN
 
     def roll(self,angle):
         """we use radians!!!"""
@@ -147,14 +149,15 @@ class ViewMatrix:
         newU=self.u*angCos+self.v*angSin
         newV=self.u*(-angSin)+self.v*angCos
         self.u=newU
-        self.v=newV   
+        self.v=newV  
     
     def pitch(self,angle):
         """we use radians!!!"""
         angCos = cos(angle)
         angSin = sin(angle)
-        newV=self.n*angCos+self.v*angSin
-        newN=self.n*(-angSin)+self.v*angCos
+        newN=self.n*angCos+self.v*angSin
+        newV=self.n*(-angSin)+self.v*angCos
+        print(angle,newN,newV)
         self.v=newV
         self.n=newN
 
@@ -194,9 +197,8 @@ class ProjectionMatrix:
     # ---
     def set_perspective(self,fov,aspect,N,F):
         self.is_orthographic = False
-        radfov = fov * pi / 180.0
-        self.top = tan(radfov/2)*N
-        self.bottom -self.top
+        self.top = N*tan((fov * (pi / 180.0))/2)
+        self.bottom=-self.top
         self.right=self.top*aspect
         self.left=-self.right
         self.near = N
@@ -233,7 +235,6 @@ class ProjectionMatrix:
             D = (self.top + self.bottom) / (self.top - self.bottom)
             E = -(self.far + self.near) / (self.far - self.near)
             F = -(2 * self.far * self.near) / (self.far - self.near)
-
             return [A,0,B, 0,
                     0,C,D, 0,
                     0,0,E, F,
@@ -256,22 +257,22 @@ class ProjectionViewMatrix:
 
     def get_matrix(self):
         return self.matrix
-    def add_transformation(self, matrix2):
-        counter = 0
-        new_matrix = [0] * 16
-        for row in range(4):
-            for col in range(4):
-                for i in range(4):
-                    new_matrix[counter] += self.matrix[row*4 + i]*matrix2[col + 4*i]
-                counter += 1
-        self.matrix = new_matrix
-    def new_proj_view(self, pos, projection, view):
-        self.matrix =  [1, 0, 0, pos[0],
-                        0, 1, 0, pos[1],
-                        0, 0, 1, pos[2],
-                        0, 0, 0, 1]
-        self.add_transformation(view.get_matrix())
-        self.add_transformation(projection.get_matrix())
+    # def add_transformation(self, matrix2):
+    #     counter = 0
+    #     new_matrix = [0] * 16
+    #     for row in range(4):
+    #         for col in range(4):
+    #             for i in range(4):
+    #                 new_matrix[counter] += self.matrix[row*4 + i]*matrix2[col + 4*i]
+    #             counter += 1
+    #     self.matrix = new_matrix
+    # def new_proj_view(self, pos, projection, view):
+    #     self.matrix =  [1, 0, 0, pos[0],
+    #                     0, 1, 0, pos[1],
+    #                     0, 0, 1, pos[2],
+    #                     0, 0, 0, 1]
+    #     self.add_transformation(view.get_matrix())
+    #     self.add_transformation(projection.get_matrix())
 
 # IDEAS FOR OPERATIONS AND TESTING:
 # if __name__ == "__main__":

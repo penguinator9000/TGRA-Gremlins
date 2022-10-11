@@ -161,7 +161,7 @@ class GraphicsProgram3D:
         if self.d_key_down:
             self.movement+=self.view_matrix.slide(delU=delta_time)
         
-        if self.movement==Vector(0,0,0):
+        if self.movement!=Vector(0,0,0):
             self.maze_collision(self.view_matrix.eye, self.movement)
 
         self.GuyRotation=self.GuyRotation%(pi*2)

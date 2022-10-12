@@ -236,7 +236,7 @@ class GraphicsProgram3D:
 
         boiWentVec = self.BOI.move(delta_time)
         collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
-        print(self.BOI.pos)
+        #print(self.BOI.pos)
         if collided:
             boiWentVec.normalize()
             side = collided.pos-self.BOI.pos + (boiWentVec*self.BOI.radius)

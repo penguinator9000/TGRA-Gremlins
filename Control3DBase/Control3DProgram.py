@@ -3,6 +3,7 @@
 # from OpenGL.GLU import *
 from ctypes import pointer
 from math import *
+import queue
 from turtle import Screen
 
 import pygame
@@ -135,7 +136,16 @@ class GraphicsProgram3D:
         self.e_key_down = False
         self.r_key_down = False
         self.f_key_down = False
-
+        for x in self.maze:
+            line = ""
+            for z in x:
+                
+                if z:
+                    line +=" 1 "
+                else:
+                    line +=" 0 "
+            print(line)
+      
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
@@ -287,11 +297,11 @@ class GraphicsProgram3D:
         self.program_loop()
     
     def query_maze(self,x,z):
-        X=x//2
-        Z=z//2
-        R=range(MAZE_Max+1)
-        if X in R and Z in R:
-            return self.maze[X][Z]
+        #X=x//2
+        #Z=z//2
+        R=range(0,MAZE_Max+1)
+        if x in R and z in R:
+            return self.maze[x][z]
         else:
             return 0
     
@@ -300,31 +310,34 @@ class GraphicsProgram3D:
         pWas = pNow+(vector*(-1))
         X= int(pWas.x//2)
         Z= int(pWas.z//2)
-        leeway = 0.25
+        leeway = 0.01
         
         if vector.x<0: vx=-1
         elif vector.x>0: vx=1
         else: vx=0
         XL = int((pWas.x+vx*leeway)//2)
-        ZL = int((pWas.z+vz*leeway)//2)
+        
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
+        ZL = int((pWas.z+vz*leeway)//2)
         print("cam here ",pNow)
         print("index: ",X,Z)
+        print(self.query_maze(X,Z))
         if vx:
-            q = self.query_maze(X+vx,Z)
+            q = self.query_maze(XL,Z)
             if q:
-                print("box x:",q.pos)
+                print("Collision? at ",XL,Z,q)
         if vz:
-            q = self.query_maze(X,Z+vz)
+            q = self.query_maze(X,ZL)
             if q:
-                print("box z:",q.pos)
+                print("Collision? at ", X, ZL,q)
     
         if vx and vz:
-            q = self.query_maze(X+vx,Z+vz)
+            q = self.query_maze(XL,ZL)
             if q:
-                print("box xz:",q.pos)
+                print("Collision? at ", XL, ZL,q)
+        
         ''' 
         ret = []
             if vx and vz:

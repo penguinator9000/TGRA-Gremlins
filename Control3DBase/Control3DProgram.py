@@ -3,7 +3,9 @@
 # from OpenGL.GLU import *
 from ctypes import pointer
 from math import *
-from turtle import Screen, pos
+from msilib.schema import Class
+from turtle import Screen, pos, position
+import random
 
 import pygame
 from pygame.locals import *
@@ -55,8 +57,29 @@ class GraphicalObject:
         cpy = GraphicalObject(self.object,color=(self.color[0],self.color[1],self.color[2]))
         cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
         return cpy
-        
-
+class BOI(GraphicalObject):
+    boingPlaces = Vector(1,0,1)
+    def spinny(self):
+        pass
+    def kill(self):
+        pass    
+    def move(self):
+        newpos = self.pos+self.boingPlaces
+        self.moveTo(newpos.x,newpos.z)
+        return 
+    def moveTo(self, x,z):
+        self.reset()
+        self.model_matrix.add_translation(x*2,0.5,z*2)
+    def randomstart(self):
+        pos = (4,0.5,4)
+        self.moveTo(pos[0],pos[2])
+    def reflect(self,mirVec):
+        perpMirVec = Vector(-mirVec.x,0,mirVec.z)
+        perpMirVec.normalize() #^n
+        dot = self.boingPlaces.dot(perpMirVec)
+        #vec = a
+        self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
+        self.boingPlaces.z =self.boingPlaces.x-2*dot*perpMirVec.z
 class GraphicsProgram3D:
     def __init__(self):
         pygame.init() 
@@ -111,6 +134,12 @@ class GraphicsProgram3D:
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
+        self.BOI = BOI(c,size=(0.5,0.5,0.5), color = (0.9,0.6,0.6))
+        self.BOI.randomstart()
+        self.objects.append(self.BOI)
+        self.BOI.reflect(Vector(1,0,0))
+        print(self.BOI.boingPlaces)
+
         '''
         for i in range(20):
             self.objects.append(GraphicalObject(c,pos=(i-(i%2),0,i-((i+1)%2)),size=(1,3,1)))

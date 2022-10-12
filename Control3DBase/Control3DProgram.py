@@ -3,8 +3,7 @@
 # from OpenGL.GLU import *
 from ctypes import pointer
 from math import *
-import queue
-from turtle import Screen
+from turtle import Screen, pos
 
 import pygame
 from pygame.locals import *
@@ -17,6 +16,7 @@ from Shaders import *
 from Matrices import *
 
 MAZE_Max=17
+MAZE_ofset=1
 
 import csv
 
@@ -77,7 +77,7 @@ class GraphicsProgram3D:
         self.view_matrix = ViewMatrix()
         #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
-        self.view_matrix.eye=Point(2,0.5,2)
+        self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
         self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
@@ -86,7 +86,7 @@ class GraphicsProgram3D:
         self.mini_map_projection_matrix = ProjectionMatrix()
         self.mini_map_projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 100)
         self.mini_map_view_matrix = ViewMatrix()
-        self.mini_map_view_matrix.eye = Point(2,3,2)
+        self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
 
         c = Cube()
@@ -99,7 +99,7 @@ class GraphicsProgram3D:
                 if first: first = False
                 else:
                     x,z = [(int(val)) for val in row]
-                    temp = GraphicalObject(c,pos=(x*2,1,z*2),size=(2,3,2),color=((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
+                    temp = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
                     self.mazeObjects.append(temp)
                     self.maze[x][z]=temp
 
@@ -145,7 +145,7 @@ class GraphicsProgram3D:
                 else:
                     line +=" 0 "
             print(line)
-      
+
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
@@ -160,19 +160,22 @@ class GraphicsProgram3D:
             self.GuyRotation+=delta_time
             
         if self.w_key_down:
-            self.movement+=self.view_matrix.slide(delN=-delta_time)
+            self.movement+=self.view_matrix.slide(delN=-delta_time*2)
         
         if self.s_key_down:
-            self.movement+=self.view_matrix.slide(delN=delta_time)
+            self.movement+=self.view_matrix.slide(delN=delta_time*2)
         
         if self.a_key_down:
-            self.movement+=self.view_matrix.slide(delU=-delta_time)
+            self.movement+=self.view_matrix.slide(delU=-delta_time*2)
         
         if self.d_key_down:
-            self.movement+=self.view_matrix.slide(delU=delta_time)
+            self.movement+=self.view_matrix.slide(delU=delta_time*2)
         
         if self.movement!=Vector(0,0,0):
             self.maze_collision(self.view_matrix.eye, self.movement)
+        else:
+            print(self.view_matrix.eye)
+
 
         self.GuyRotation=self.GuyRotation%(pi*2)
         self.Guy.reset()
@@ -297,8 +300,7 @@ class GraphicsProgram3D:
         self.program_loop()
     
     def query_maze(self,x,z):
-        #X=x//2
-        #Z=z//2
+
         R=range(0,MAZE_Max+1)
         if x in R and z in R:
             return self.maze[x][z]
@@ -310,34 +312,53 @@ class GraphicsProgram3D:
         pWas = pNow+(vector*(-1))
         X= int(pWas.x//2)
         Z= int(pWas.z//2)
-        leeway = 0.01
+        leeway = 0.25
+        rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
         
         if vector.x<0: vx=-1
         elif vector.x>0: vx=1
         else: vx=0
-        XL = int((pWas.x+vx*leeway)//2)
-        
+        #XL = int((pWas.x+vx*leeway)//2)
+        XR = int((pWas.x+vx*rad)//2)
+        XV = int((pNow.x+vx*rad)//2)
+        if XR == XV: vx=0
+
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
-        ZL = int((pWas.z+vz*leeway)//2)
+        #ZL = int((pWas.z+vz*leeway)//2)
+        ZR = int((pWas.z+vz*rad)//2)
+        ZV = int((pNow.z+vz*rad)//2)
+        if ZR == ZV: vz=0
+
         print("cam here ",pNow)
         print("index: ",X,Z)
         print(self.query_maze(X,Z))
         if vx:
-            q = self.query_maze(XL,Z)
+            q = self.query_maze(XV,Z)
             if q:
-                print("Collision? at ",XL,Z,q)
+                print("Collision x at ",XV,Z,q)
+                print("q.pos",q.pos,"pNow.x",pNow.x)
+                self.view_matrix.eye.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
+                
+                print("q.pos",q.pos,"pNow.x",pNow.x)
+                
         if vz:
-            q = self.query_maze(X,ZL)
+            q = self.query_maze(X,ZV)
             if q:
-                print("Collision? at ", X, ZL,q)
+                print("Collision z at ", X, ZV,q)
+                print("q.pos",q.pos,"pNow.z",pNow.z)
+                self.view_matrix.eye.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
+                
+                print("q.pos",q.pos,"pNow.z",pNow.z)
+               
+                
     
         if vx and vz:
-            q = self.query_maze(XL,ZL)
+            q = self.query_maze(XV,ZV)
             if q:
-                print("Collision? at ", XL, ZL,q)
-        
+                print("Collision? at ", XV, ZV,q)
+                
         ''' 
         ret = []
             if vx and vz:

@@ -173,8 +173,6 @@ class GraphicsProgram3D:
         
         if self.movement!=Vector(0,0,0):
             self.maze_collision(self.view_matrix.eye, self.movement)
-        else:
-            print(self.view_matrix.eye)
 
 
         self.GuyRotation=self.GuyRotation%(pi*2)
@@ -312,7 +310,7 @@ class GraphicsProgram3D:
         pWas = pNow+(vector*(-1))
         X= int(pWas.x//2)
         Z= int(pWas.z//2)
-        leeway = 0.25
+        #leeway = 0.25
         rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
         
         if vector.x<0: vx=-1
@@ -331,37 +329,44 @@ class GraphicsProgram3D:
         ZV = int((pNow.z+vz*rad)//2)
         ztru = ZR == ZV or True
 
-        print("cam here ",pNow)
-        print("index: ",X,Z)
-        print(self.query_maze(X,Z))
+        #print("cam here ",pNow)
+        #print("index: ",X,Z)
+        #print(self.query_maze(X,Z))
 
         didcolision=False
         if xtru:
             q = self.query_maze(XV,Z)
             if q:
-                print("Collision x at ",XV,Z,q)
-                print("q.pos",q.pos,"pNow.x",pNow.x)
+                #print("Collision x at ",XV,Z,q)
+                #print("q.pos",q.pos,"pNow.x",pNow.x)
                 self.view_matrix.eye.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
                 didcolision=True
-                print("q.pos",q.pos,"pNow.x",pNow.x)
+                #print("q.pos",q.pos,"pNow.x",pNow.x)
                 
                 
         if ztru:
             q = self.query_maze(X,ZV)
             if q:
-                print("Collision z at ", X, ZV,q)
-                print("q.pos",q.pos,"pNow.z",pNow.z)
+                #print("Collision z at ", X, ZV,q)
+                #print("q.pos",q.pos,"pNow.z",pNow.z)
                 self.view_matrix.eye.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
                 didcolision=True
-                print("q.pos",q.pos,"pNow.z",pNow.z)
-
-               
+                #print("q.pos",q.pos,"pNow.z",pNow.z)
+    
                 
     
         if not didcolision and xtru and ztru:
             q = self.query_maze(XV,ZV)
             if q:
-                print("Collision? at ", XV, ZV,q)
+                #print("Collision xz at ", XV, ZV,q)
+                side = q.pos-self.view_matrix.eye
+                if side.x >= side.z:
+                    self.view_matrix.eye.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
+                else:
+                    self.view_matrix.eye.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
+
+
+
                 
         ''' 
         ret = []

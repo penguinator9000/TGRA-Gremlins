@@ -321,7 +321,7 @@ class GraphicsProgram3D:
         #XL = int((pWas.x+vx*leeway)//2)
         XR = int((pWas.x+vx*rad)//2)
         XV = int((pNow.x+vx*rad)//2)
-        if XR == XV: vx=0
+        xtru = XR == XV or True
 
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
@@ -329,32 +329,36 @@ class GraphicsProgram3D:
         #ZL = int((pWas.z+vz*leeway)//2)
         ZR = int((pWas.z+vz*rad)//2)
         ZV = int((pNow.z+vz*rad)//2)
-        if ZR == ZV: vz=0
+        ztru = ZR == ZV or True
 
         print("cam here ",pNow)
         print("index: ",X,Z)
         print(self.query_maze(X,Z))
-        if vx:
+
+        didcolision=False
+        if xtru:
             q = self.query_maze(XV,Z)
             if q:
                 print("Collision x at ",XV,Z,q)
                 print("q.pos",q.pos,"pNow.x",pNow.x)
                 self.view_matrix.eye.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
-                
+                didcolision=True
                 print("q.pos",q.pos,"pNow.x",pNow.x)
                 
-        if vz:
+                
+        if ztru:
             q = self.query_maze(X,ZV)
             if q:
                 print("Collision z at ", X, ZV,q)
                 print("q.pos",q.pos,"pNow.z",pNow.z)
                 self.view_matrix.eye.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
-                
+                didcolision=True
                 print("q.pos",q.pos,"pNow.z",pNow.z)
+
                
                 
     
-        if vx and vz:
+        if not didcolision and xtru and ztru:
             q = self.query_maze(XV,ZV)
             if q:
                 print("Collision? at ", XV, ZV,q)

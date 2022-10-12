@@ -136,6 +136,7 @@ class GraphicsProgram3D:
 
         self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
         self.GuyRotation = 0
+        self.GuyBop = 0
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
         self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))]
@@ -154,7 +155,7 @@ class GraphicsProgram3D:
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
-        self.perspective_max=3
+        self.perspective_max=2
         self.perspective_view=0
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
@@ -212,8 +213,12 @@ class GraphicsProgram3D:
 
 
         self.GuyRotation=self.GuyRotation%(pi*2)
+        self.GuyBop += self.movement.__len__()
+        bopSpeed=3
+        self.GuyBop= self.GuyBop%(6.28/bopSpeed)
+        bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)**2) 
         self.Guy.reset()
-        self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,0,self.view_matrix.eye.z))
+        self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,bopy,self.view_matrix.eye.z))
         
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)

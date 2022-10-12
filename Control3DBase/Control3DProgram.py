@@ -62,11 +62,15 @@ class BOI(GraphicalObject):
     radius = Vector(0.25,0.25,0.25).__len__()
     spins = Vector(1,1.2,1.1)
     comboSpins = Vector(0,0,0)
+    rgb = [0,0,0]
     def spinny(self, dtime):
         self.comboSpins += self.spins*dtime 
         self.model_matrix.add_rotation(sin(self.comboSpins.x),
                                         sin(self.comboSpins.y),
                                         sin(self.comboSpins.z))
+        self.color = ((sin(self.comboSpins.x)+1)/2,
+                                        (sin(self.comboSpins.y)+1)/2,
+                                        (sin(self.comboSpins.z)+1)/2)
     def kill(self):
         pass    
     def move(self, dtime):

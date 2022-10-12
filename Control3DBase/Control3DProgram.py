@@ -183,7 +183,8 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
         self.view_matrix_3P.eye=self.view_matrix.eye+(self.view_matrix.n*0.5)+(self.view_matrix.v*0.5)
-        self.view_matrix_3P.look(self.view_matrix.eye,Vector(0,1,0))
+        self.maze_collision(self.view_matrix_3P.eye, (self.view_matrix.n*0.5)+(self.view_matrix.v*0.5))
+        self.view_matrix_3P.look(self.view_matrix.eye,Vector(0,1,0)+(self.view_matrix.n*(-0.01)))
 
 
         self.Guy2 = self.Guy.copy()
@@ -332,14 +333,13 @@ class GraphicsProgram3D:
         #print("cam here ",pNow)
         #print("index: ",X,Z)
         #print(self.query_maze(X,Z))
-
         didcolision=False
         if xtru:
             q = self.query_maze(XV,Z)
             if q:
                 #print("Collision x at ",XV,Z,q)
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
-                self.view_matrix.eye.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
+                pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
                 didcolision=True
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
                 
@@ -349,22 +349,23 @@ class GraphicsProgram3D:
             if q:
                 #print("Collision z at ", X, ZV,q)
                 #print("q.pos",q.pos,"pNow.z",pNow.z)
-                self.view_matrix.eye.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
+                pNow.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
                 didcolision=True
                 #print("q.pos",q.pos,"pNow.z",pNow.z)
     
                 
     
-        if not didcolision and xtru and ztru:
+        if not didcolision:
             q = self.query_maze(XV,ZV)
             if q:
                 #print("Collision xz at ", XV, ZV,q)
-                side = q.pos-self.view_matrix.eye
+                vector.normalize()
+                side = q.pos-pNow + (vector*rad)
                 if side.x >= side.z:
-                    self.view_matrix.eye.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
+                    pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
                 else:
-                    self.view_matrix.eye.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
-
+                    pNow.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
+        return q
 
 
                 

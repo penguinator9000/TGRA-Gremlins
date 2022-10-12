@@ -21,7 +21,8 @@ MAZE_Max=17
 MAZE_ofset=1
 
 import csv
-
+global WIN
+WIN=False
 
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
@@ -246,7 +247,10 @@ class GraphicsProgram3D:
         if self.query_maze(int(self.BOI.pos.x//2),int(self.BOI.pos.z//2)) == 0:
             self.BOI.randomstart()
         if self.query_maze(int(self.view_matrix.eye.x//2),int(self.view_matrix.eye.z//2)) == 0:
-            print('WOOOOOW you made it out of the maaaaze amaaaazing!!!!!')
+            global WIN
+            WIN=True
+            return True
+        return False 
         
 
     def display(self):
@@ -345,9 +349,9 @@ class GraphicsProgram3D:
                         self.r_key_down = False
                     if event.key == K_f:
                         self.f_key_down = False
-            
-            self.update()
-            self.display()
+            if not exiting:
+                exiting = self.update()
+                self.display()
 
         #OUT OF GAME LOOP
         pygame.quit()
@@ -454,3 +458,22 @@ class GraphicsProgram3D:
 
 if __name__ == "__main__":
     GraphicsProgram3D().start()
+    while WIN:
+        amazing="""    _             _ _ _ 
+     /\                                   (_)           | | | |
+    /  \   _ __ ___   __ _  __ _  __ _ _____ _ __   __ _| | | |
+   / /\ \ | '_ ` _ \ / _` |/ _` |/ _` |_  / | '_ \ / _` | | | |
+  / ____ \| | | | | | (_| | (_| | (_| |/ /| | | | | (_| |_|_|_|
+ /_/    \_\_| |_| |_|\__,_|\__,_|\__,_/___|_|_| |_|\__, (_|_|_)
+                                                    __/ |      
+                                                   |___/"""
+        print('WOOOOOW you made it out of the maaaaze',amazing)
+    if not WIN:
+        over = """   _____                         ____                 
+  / ____|                       / __ \                
+ | |  __  __ _ _ __ ___   ___  | |  | |_   _____ _ __ 
+ | | |_ |/ _` | '_ ` _ \ / _ \ | |  | \ \ / / _ \ '__|
+ | |__| | (_| | | | | | |  __/ | |__| |\ V /  __/ |   
+  \_____|\__,_|_| |_| |_|\___|  \____/  \_/ \___|_|"""
+        print(over)
+

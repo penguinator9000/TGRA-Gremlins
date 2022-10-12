@@ -59,22 +59,30 @@ class GraphicalObject:
         return cpy
 class BOI(GraphicalObject):
     boingPlaces = Vector(1,0,1)
-    def spinny(self):
-        pass
+    radius = Vector(0.25,0.25,0.25).__len__()
+    spins = Vector(1,1.2,1.1)
+    comboSpins = Vector(0,0,0)
+    def spinny(self, dtime):
+        self.comboSpins += self.spins*dtime 
+        self.model_matrix.add_rotation(sin(self.comboSpins.x),
+                                        sin(self.comboSpins.y),
+                                        sin(self.comboSpins.z))
     def kill(self):
         pass    
-    def move(self):
-        newpos = self.pos+self.boingPlaces
+    def move(self, dtime):
+        moves = self.boingPlaces*dtime
+        newpos = self.pos+moves
         self.moveTo(newpos.x,newpos.z)
-        return 
+        return moves
     def moveTo(self, x,z):
         self.reset()
         self.model_matrix.add_translation(x*2,0.5,z*2)
+        self.pos = Point(x,0.5,z)
     def randomstart(self):
         pos = (4,0.5,4)
         self.moveTo(pos[0],pos[2])
     def reflect(self,mirVec):
-        perpMirVec = Vector(-mirVec.x,0,mirVec.z)
+        perpMirVec = Vector(-mirVec.z,0,mirVec.x)
         perpMirVec.normalize() #^n
         dot = self.boingPlaces.dot(perpMirVec)
         #vec = a
@@ -137,7 +145,6 @@ class GraphicsProgram3D:
         self.BOI = BOI(c,size=(0.5,0.5,0.5), color = (0.9,0.6,0.6))
         self.BOI.randomstart()
         self.objects.append(self.BOI)
-        self.BOI.reflect(Vector(1,0,0))
         print(self.BOI.boingPlaces)
 
         '''
@@ -219,6 +226,22 @@ class GraphicsProgram3D:
         self.Guy2 = self.Guy.copy()
         self.Guy2.update(self.Guy2update[0],self.Guy2update[1],self.Guy2update[2],self.Guy2update[3])
 
+
+        boiWentVec = self.BOI.move(delta_time)
+        collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
+        #print(self.BOI.pos)
+        if collided:
+            boiWentVec.normalize()
+            side = collided.pos-self.BOI.pos + (boiWentVec*self.BOI.radius)
+            if side.x >= side.z:
+                self.BOI.reflect(Vector(1,0,0))
+            else:
+                self.BOI.reflect(Vector(0,0,1))
+        self.BOI.spinny(delta_time)  
+        if self.query_maze(int(self.BOI.pos.x//2),int(self.BOI.pos.z//2)) == 0:
+            self.BOI.randomstart()
+        if self.query_maze(int(self.view_matrix.eye.x//2),int(self.view_matrix.eye.z//2)) == 0:
+            print('WOOOOOW you made it out of the maaaaze amaaaazing!!!!!')
         
 
     def display(self):
@@ -335,13 +358,14 @@ class GraphicsProgram3D:
         else:
             return 0
     
-    def maze_collision(self,pNow,vector):
+    def maze_collision(self,pNow,vector, rad = 0):
         """The point is were you want to be vector is how you got there"""
         pWas = pNow+(vector*(-1))
         X= int(pWas.x//2)
         Z= int(pWas.z//2)
         #leeway = 0.25
-        rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
+        if not rad:
+            rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
         
         if vector.x<0: vx=-1
         elif vector.x>0: vx=1
@@ -362,6 +386,7 @@ class GraphicsProgram3D:
         #print("cam here ",pNow)
         #print("index: ",X,Z)
         #print(self.query_maze(X,Z))
+        quacko = None
         didcolision=False
         if xtru:
             q = self.query_maze(XV,Z)
@@ -370,6 +395,8 @@ class GraphicsProgram3D:
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
                 pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
                 didcolision=True
+                quacko = q
+
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
                 
                 
@@ -381,6 +408,7 @@ class GraphicsProgram3D:
                 pNow.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
                 didcolision=True
                 #print("q.pos",q.pos,"pNow.z",pNow.z)
+                quacko = q
     
                 
     
@@ -390,11 +418,13 @@ class GraphicsProgram3D:
                 #print("Collision xz at ", XV, ZV,q)
                 vector.normalize()
                 side = q.pos-pNow + (vector*rad)
+                if not quacko:
+                    quacko = q
                 if side.x >= side.z:
                     pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
                 else:
                     pNow.z = q.pos.z + q.size.z*(-vz)*(0.5) + rad*(-vz)
-        return q
+        return quacko
 
 
                 

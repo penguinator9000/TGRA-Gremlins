@@ -4,6 +4,7 @@
 from ctypes import pointer
 from math import *
 from msilib.schema import Class
+from shutil import move
 from turtle import Screen, pos, position
 import random
 
@@ -72,8 +73,11 @@ class BOI(GraphicalObject):
         self.color = ((sin(self.comboSpins.x)+1)/2,
                                         (sin(self.comboSpins.y)+1)/2,
                                         (sin(self.comboSpins.z)+1)/2)
-    def kill(self):
-        pass    
+    def kill(self, playerPos):
+        diff =  playerPos - self.pos
+        if diff.x > -self.radius and diff.x < self.radius and diff.y > -self.radius and diff.y < self.radius:
+            return True
+        return False     
     def move(self, dtime):
         moves = self.boingPlaces*dtime
         newpos = self.pos+moves
@@ -81,11 +85,14 @@ class BOI(GraphicalObject):
         return moves
     def moveTo(self, x,z):
         self.reset()
-        self.model_matrix.add_translation(x*2,0.5,z*2)
+        self.model_matrix.add_translation(x*2,0.25,z*2)
         self.pos = Point(x,0.5,z)
-    def randomstart(self):
-        pos = (4,0.5,4)
-        self.moveTo(pos[0],pos[2])
+    def randomstart(self,qman):
+        x = randint(3,31)
+        z = randint(3,31)
+        if qman.query_maze(int(x//2),int(z//2)):
+            return self.moveTo(x,z)
+        self.randomstart(qman)
     def reflect(self,mirVec):
         perpMirVec = Vector(-mirVec.z,0,mirVec.x)
         perpMirVec.normalize() #^n
@@ -149,9 +156,8 @@ class GraphicsProgram3D:
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
         self.BOI = BOI(c,size=(0.5,0.5,0.5), color = (0.9,0.6,0.6))
-        self.BOI.randomstart()
+        self.BOI.randomstart(self)
         self.objects.append(self.BOI)
-        print(self.BOI.boingPlaces)
 
         '''
         for i in range(20):
@@ -178,15 +184,6 @@ class GraphicsProgram3D:
         self.e_key_down = False
         self.r_key_down = False
         self.f_key_down = False
-        for x in self.maze:
-            line = ""
-            for z in x:
-                
-                if z:
-                    line +=" 1 "
-                else:
-                    line +=" 0 "
-            print(line)
 
 
     def update(self):
@@ -239,7 +236,7 @@ class GraphicsProgram3D:
 
         boiWentVec = self.BOI.move(delta_time)
         collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
-        #print(self.BOI.pos)
+        print(self.BOI.pos)
         if collided:
             boiWentVec.normalize()
             side = collided.pos-self.BOI.pos + (boiWentVec*self.BOI.radius)
@@ -247,9 +244,12 @@ class GraphicsProgram3D:
                 self.BOI.reflect(Vector(1,0,0))
             else:
                 self.BOI.reflect(Vector(0,0,1))
-        self.BOI.spinny(delta_time)  
+        self.BOI.spinny(delta_time)
+        if self.BOI.kill(self.view_matrix.eye): 
+            self.view_matrix.eye.x = 3
+            self.view_matrix.eye.z = 3
         if self.query_maze(int(self.BOI.pos.x//2),int(self.BOI.pos.z//2)) == 0:
-            self.BOI.randomstart()
+            self.BOI.randomstart(self)
         if self.query_maze(int(self.view_matrix.eye.x//2),int(self.view_matrix.eye.z//2)) == 0:
             global WIN
             WIN=True

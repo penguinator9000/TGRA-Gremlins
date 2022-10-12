@@ -99,7 +99,8 @@ class BOI(GraphicalObject):
         dot = self.boingPlaces.dot(perpMirVec)
         #vec = a
         self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
-        self.boingPlaces.z =self.boingPlaces.x-2*dot*perpMirVec.z
+        self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
+
 class GraphicsProgram3D:
     def __init__(self):
         pygame.init() 
@@ -238,10 +239,14 @@ class GraphicsProgram3D:
         collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
         #print(self.BOI.pos)
         if collided:
+            self.BOI.moveTo(self.BOI.pos.x,self.BOI.pos.z)
             boiWentVec.normalize()
+            # side = q.pos-pNow + (vector*rad)
+            #print(collided.pos)
             side = collided.pos-self.BOI.pos + (boiWentVec*self.BOI.radius)
-            if side.x >= side.z:
+            if abs(side.x) < abs(side.z):
                 self.BOI.reflect(Vector(1,0,0))
+                #print("x",self.BOI.boingPlaces,side)
             else:
                 self.BOI.reflect(Vector(0,0,1))
         self.BOI.spinny(delta_time)

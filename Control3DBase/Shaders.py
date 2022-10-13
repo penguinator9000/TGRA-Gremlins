@@ -87,23 +87,23 @@ class Shader3D:
         glUniform4f(self.lightPosLoc,x,y,z,1)
         
     def set_light_diffuse(self,r,g,b):
-        glUniform4f(self.lightDifLoc,r,g,b,0)
+        glUniform4f(self.lightDifLoc,r,g,b,1)
     
     def set_light_ambient(self,r,g,b):
-        glUniform4f(self.lightAmbLoc,r,g,b,0)
+        glUniform4f(self.lightAmbLoc,r,g,b,1)
     
     def set_light_specular(self,r,g,b):
-        glUniform4f(self.lightSpeLoc,r,g,b,0)
+        glUniform4f(self.lightSpeLoc,r,g,b,1)
     
 
 
     def set_material_diffuse(self,r,g,b):
-        glUniform4f(self.matDifLoc, r, g, b,0)
+        glUniform4f(self.matDifLoc, r, g, b,1)
     
     def set_material_ambient(self,r,g,b):
-        glUniform4f(self.matAmbLoc,r,g,b,0)
+        glUniform4f(self.matAmbLoc,r,g,b,1)
 
     def set_material_specular(self,r,g,b,shiny):
-        glUniform4f(self.matSpeLoc,r,g,b,0)
+        glUniform4f(self.matSpeLoc,r,g,b,1)
         glUniform1f(self.matShiLoc,shiny)
     

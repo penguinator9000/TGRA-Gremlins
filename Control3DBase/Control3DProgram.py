@@ -44,14 +44,22 @@ class GraphicalObject:
         self.color = color
         self.pos=Point(pos[0],pos[1],pos[2])
         self.size=Vector(size[0],size[1],size[2])
-        self.diffuse = (0,0,0)
-        self.ambiance = (0,0,0)
-        self.spectral = (0,0,0)
+        self.diffuse = (1,1,1)
+        self.ambiance = (0.2,0.2,0.2)
+        self.specular = (0.1,0.1,0.1)
+        self.shiny = 1
 
     def draw(self, shader):
+        r,g,b = self.color
+        rd,gd,bd = self.diffuse
+        ra,ga,ba = self.ambiance
+        rs,gs,bs = self.specular
         shader.set_model_matrix(self.model_matrix.matrix)
-        shader.set_material_diffuse(self.color[0],self.color[1],self.color[2])
+        shader.set_material_diffuse(r * rd,g*gd,b*bd)
+        shader.set_material_specular(r*rs,g*gs,b*bs, self.shiny)
+        shader.set_material_ambient(r*ra,g*ga,b*ba)
         self.object.draw(shader)
+        
     def update(self, size = 0 ,pos = 0, rotation =0, color =0):
         if color: self.color = color 
         if pos:
@@ -68,6 +76,10 @@ class GraphicalObject:
     def copy(self):
         cpy = GraphicalObject(self.object,color=(self.color[0],self.color[1],self.color[2]))
         cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
+        cpy.ambiance = self.ambiance
+        cpy.diffuse = self.diffuse
+        cpy.specular = self.specular
+        cpy.shiny = self.shiny
         return cpy
 
 class BOI(GraphicalObject):
@@ -133,12 +145,12 @@ class GraphicsProgram3D:
         #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
         self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
-        self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye.pos)
+        self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
-        self.shader.set_material_ambient(1,1,1)
-        self.shader.set_light_specular(0,0,0)
-        self.shader.set_material_specular(0,0,0,1)
+        
+        self.shader.set_light_specular(0.2,0.2,0.2)
+        self.shader.set_material_specular(0.2,0.2,0.2,1)
 
         self.view_matrix_3P = ViewMatrix()
         
@@ -289,7 +301,7 @@ class GraphicsProgram3D:
         self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
         self.shader.set_light_ambient(0.2,0.2,0.2)
 
-        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye.pos)
+        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
 
         for obj in self.objects:
@@ -300,11 +312,11 @@ class GraphicsProgram3D:
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
-            self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye.pos)
+            self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye)
         elif self.perspective_view==2:
-            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye.pos)
+            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         else:
-            self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye.pos)
+            self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         for obj in self.objects:

@@ -1,5 +1,5 @@
-attribute vec3 a_position;
-attribute vec3 a_normal;
+attribute vec4 a_position;
+attribute vec4 a_normal;
 
 uniform mat4 u_model_matrix;
 uniform mat4 u_view_matrix;
@@ -34,11 +34,11 @@ void main(void)
 	position = u_model_matrix * position;
 	normal = u_model_matrix * normal;
 	
-	s = u_light_position-position;
+	s = u_light_position - position;
 	lambert = max(0.0,dot(normal, s)/(normal.length()*s.length()));
 	
 	v = u_eye_position-position;
-	h = (s+v)*0.5
+	h = (s+v)*0.5;
 	phong =  max(0.0,dot(normal, h)/(normal.length()*h.length()));
 
 	//old lighting
@@ -46,8 +46,8 @@ void main(void)
 	//float light_factor_2 = max(dot(normalize(normal), normalize(vec4(-3, -2, -1, 0))), 0.0);
 	//v_color = (light_factor_1 + light_factor_2) * u_color; // ### --- Change this vector (pure white) to color variable --- #####
 
-
-	v_color = u_light_ambient * u_material_ambient + lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * pow(phong,u_material_shiny);
+	//float phongf = pow(phong, u_material_shiny)
+	v_color = u_light_ambient * u_material_ambient + lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * phong;
 
 	position = u_view_matrix * position;
 	position = u_projection_matrix * position;

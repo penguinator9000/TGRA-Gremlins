@@ -123,15 +123,19 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,6,6),(1,1,1),Vector(1,1,1))
+        self.light1 = Light(Point(6,10,6),(1,1,1))
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
         #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
         self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
-        self.shader.set_view_matrix(self.view_matrix.get_matrix())
+        self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye.pos)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+
+        self.shader.set_material_ambient(1,1,1)
+        self.shader.set_light_specular(0,0,0)
+        self.shader.set_material_specular(0,0,0,1)
 
         self.view_matrix_3P = ViewMatrix()
         
@@ -278,15 +282,13 @@ class GraphicsProgram3D:
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
-        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
-        self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
-#     def set_light_position(self,vertex_array):
-    #     glVertexAttribPointer(self.lightPosLoc, 3, GL_FLOAT, False, 0, vertex_array)
-        
-    # def set_light_diffuse(self,vertex_array):
-    #     glVertexAttribPointer(self.lightDifLoc, 3, GL_FLOAT, False, 0, vertex_array)
-        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
+        self.shader.set_light_position(self.view_matrix.eye.x,self.view_matrix.eye.y+2,self.view_matrix.eye.z)
         self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
+        self.shader.set_light_ambient(0.2,0.2,0.2)
+
+        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye.pos)
+        self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
+
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:
@@ -295,15 +297,13 @@ class GraphicsProgram3D:
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
-            self.shader.set_view_matrix(self.view_matrix_3P.get_matrix())
+            self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye.pos)
         elif self.perspective_view==2:
-            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
+            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye.pos)
         else:
-            self.shader.set_view_matrix(self.view_matrix.get_matrix())
+            self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye.pos)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
-        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
-        self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:

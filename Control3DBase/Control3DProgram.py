@@ -24,11 +24,11 @@ MAZE_ofset=1
 import csv
 global WIN
 WIN=False
-class Light():
-    def __init__(self, pos = Point(0,0,0), color = (0,0,0), diffuse = 0):
+class Lights():
+    def __init__(self, pos = Point(4,10,4), color = (1,1,1)):
         self.pos = pos
         self.color = color
-        self.diffuse = diffuse
+        
     def moveTo():
         pass
         

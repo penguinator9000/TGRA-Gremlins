@@ -18,12 +18,12 @@ void main(void)
 	vec4 position = vec4(a_position.x, a_position.y, a_position.z, 1.0);
 	vec4 normal = vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
 	vec4 s = vec4(0);
-	vec4 lambert = vec4(0);
+	float lambert = 0.0;
 
 	position = u_model_matrix * position;
 	normal = u_model_matrix * normal;
 	s = u_light_position-position;
-	lambert = max(0,dot(normal, s)/(__len__(normal)*__len__(s)));
+	lambert = max(0,dot(normal, s)/(normal.length()*s.length()));
 	
 
 	//float light_factor_1 = max(dot(normalize(normal), normalize(vec4(1, 2, 3, 0))), 0.0);

@@ -24,7 +24,7 @@ MAZE_ofset=1
 import csv
 global WIN
 WIN=False
-class Lights():
+class Light():
     def __init__(self, pos = Point(0,0,0), color = (0,0,0), diffuse = 0):
         self.pos = pos
         self.color = color
@@ -44,10 +44,10 @@ class GraphicalObject:
         self.color = color
         self.pos=Point(pos[0],pos[1],pos[2])
         self.size=Vector(size[0],size[1],size[2])
-        
+
     def draw(self, shader):
         shader.set_model_matrix(self.model_matrix.matrix)
-        shader.set_solid_color(self.color[0],self.color[1],self.color[2])
+        shader.set_material_diffuse(self.color[0],self.color[1],self.color[2])
         self.object.draw(shader)
     def update(self, size = 0 ,pos = 0, rotation =0, color =0):
         if color: self.color = color 
@@ -123,7 +123,7 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        
+        self.light1 = Light(Point(6,6,6),(1,1,1),Vector(1,1,1))
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -280,6 +280,13 @@ class GraphicsProgram3D:
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
+#     def set_light_position(self,vertex_array):
+    #     glVertexAttribPointer(self.lightPosLoc, 3, GL_FLOAT, False, 0, vertex_array)
+        
+    # def set_light_diffuse(self,vertex_array):
+    #     glVertexAttribPointer(self.lightDifLoc, 3, GL_FLOAT, False, 0, vertex_array)
+        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
+        self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:
@@ -294,6 +301,9 @@ class GraphicsProgram3D:
         else:
             self.shader.set_view_matrix(self.view_matrix.get_matrix())
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+
+        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
+        self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:

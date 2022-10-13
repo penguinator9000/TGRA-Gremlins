@@ -219,7 +219,7 @@ class GraphicsProgram3D:
         self.GuyBop += self.movement.__len__()
         bopSpeed=3
         self.GuyBop= self.GuyBop%(6.28/bopSpeed)
-        bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)**2) 
+        bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)) 
         self.Guy.reset()
         self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,bopy,self.view_matrix.eye.z))
         

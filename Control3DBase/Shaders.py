@@ -73,5 +73,12 @@ class Shader3D:
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
 
-    def set_light_position(self,point):
+    def set_light_position(self,vertex_array):
+        glVertexAttribPointer(self.lightPosLoc, 3, GL_FLOAT, False, 0, vertex_array)
         
+    def set_light_diffuse(self,vertex_array):
+        glVertexAttribPointer(self.lightDifLoc, 3, GL_FLOAT, False, 0, vertex_array)
+    
+    def set_material_diffuse(self,vertex_array):
+        glVertexAttribPointer(self.matDifLoc, 3, GL_FLOAT, False, 0, vertex_array)
+    

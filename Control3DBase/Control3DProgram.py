@@ -5,7 +5,7 @@ from ctypes import pointer
 from math import *
 from msilib.schema import Class
 from shutil import move
-from turtle import Screen, pos, position
+from turtle import Screen, color, pos, position
 import random
 
 import pygame
@@ -24,7 +24,14 @@ MAZE_ofset=1
 import csv
 global WIN
 WIN=False
-
+class Lights():
+    def __init__(self, pos = Point(0,0,0), color = (0,0,0), diffuse = 0):
+        self.pos = pos
+        self.color = color
+        self.diffuse = diffuse
+    def moveTo():
+        pass
+        
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
         self.object = shape
@@ -59,6 +66,7 @@ class GraphicalObject:
         cpy = GraphicalObject(self.object,color=(self.color[0],self.color[1],self.color[2]))
         cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
         return cpy
+
 class BOI(GraphicalObject):
     boingPlaces = Vector(1,0,1)
     radius = Vector(0.25,0.25,0.25).__len__()

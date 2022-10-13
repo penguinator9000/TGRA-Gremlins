@@ -73,9 +73,9 @@ class BOI(GraphicalObject):
         self.color = ((sin(self.comboSpins.x)+1)/2,
                                         (sin(self.comboSpins.y)+1)/2,
                                         (sin(self.comboSpins.z)+1)/2)
-    def kill(self, playerPos):
+    def kill(self, playerPos, proj):
         diff =  playerPos - self.pos
-        if diff.x > -self.radius and diff.x < self.radius and diff.y > -self.radius and diff.y < self.radius:
+        if diff.__len__() <  Vector(proj.near,proj.top,proj.right).__len__():
             return True
         return False     
     def move(self, dtime):
@@ -250,9 +250,10 @@ class GraphicsProgram3D:
             else:
                 self.BOI.reflect(Vector(0,0,1))
         self.BOI.spinny(delta_time)
-        if self.BOI.kill(self.view_matrix.eye): 
+        if self.BOI.kill(self.view_matrix.eye,self.projection_matrix): 
             self.view_matrix.eye.x = 3
             self.view_matrix.eye.z = 3
+            pass
         if self.query_maze(int(self.BOI.pos.x//2),int(self.BOI.pos.z//2)) == 0:
             self.BOI.randomstart(self)
         if self.query_maze(int(self.view_matrix.eye.x//2),int(self.view_matrix.eye.z//2)) == 0:

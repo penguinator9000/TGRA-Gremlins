@@ -44,6 +44,9 @@ class GraphicalObject:
         self.color = color
         self.pos=Point(pos[0],pos[1],pos[2])
         self.size=Vector(size[0],size[1],size[2])
+        self.diffuse = (0,0,0)
+        self.ambiance = (0,0,0)
+        self.spectral = (0,0,0)
 
     def draw(self, shader):
         shader.set_model_matrix(self.model_matrix.matrix)
@@ -123,7 +126,7 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,6,6),(1,1,1),Vector(1,1,1))
+        self.light1 = Light(Point(6,200,6),(1,1,1))
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()

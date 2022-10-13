@@ -68,7 +68,7 @@ class Shader3D:
 
     def set_view_matrix(self, matrix_array,matrix_eye_pos):
         glUniformMatrix4fv(self.viewMatrixLoc, 1, True, matrix_array)
-        glUniform4f(self.eyePosLoc,matrix_eye_pos.x,matrix_eye_pos.y,matrix_eye_pos.z,0)
+        glUniform4f(self.eyePosLoc,matrix_eye_pos.x,matrix_eye_pos.y,matrix_eye_pos.z,1)
 
 
     def set_projection_matrix(self, matrix_array):
@@ -87,23 +87,23 @@ class Shader3D:
         glUniform4f(self.lightPosLoc,x,y,z,1)
         
     def set_light_diffuse(self,r,g,b):
-        glUniform4f(self.lightDifLoc,r,g,b,1)
+        glUniform4f(self.lightDifLoc,r,g,b,0)
     
     def set_light_ambient(self,r,g,b):
-        glUniform4f(self.lightAmbLoc,r,g,b,1)
+        glUniform4f(self.lightAmbLoc,r,g,b,0)
     
     def set_light_specular(self,r,g,b):
-        glUniform4f(self.lightSpeLoc,r,g,b,1)
+        glUniform4f(self.lightSpeLoc,r,g,b,0)
     
 
 
     def set_material_diffuse(self,r,g,b):
-        glUniform4f(self.matDifLoc, r, g, b,1)
+        glUniform4f(self.matDifLoc, r, g, b,0)
     
     def set_material_ambient(self,r,g,b):
-        glUniform4f(self.matAmbLoc,r,g,b,1)
+        glUniform4f(self.matAmbLoc,r,g,b,0)
 
     def set_material_specular(self,r,g,b,shiny):
-        glUniform4f(self.matSpeLoc,r,g,b,1)
+        glUniform4f(self.matSpeLoc,r,g,b,0)
         glUniform1f(self.matShiLoc,shiny)
     

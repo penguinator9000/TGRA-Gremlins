@@ -55,7 +55,7 @@ class GraphicalObject:
         ra,ga,ba = self.ambiance
         rs,gs,bs = self.specular
         shader.set_model_matrix(self.model_matrix.matrix)
-        shader.set_material_diffuse(r * rd,g*gd,b*bd)
+        shader.set_material_diffuse(r*rd,g*gd,b*bd)
         shader.set_material_specular(r*rs,g*gs,b*bs, self.shiny)
         shader.set_material_ambient(r*ra,g*ga,b*ba)
         self.object.draw(shader)
@@ -138,7 +138,7 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,10,6),(1,1,1))
+        self.light1 = Light(Point(6,10,6),(0.9,0.9,0.9))
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -297,7 +297,7 @@ class GraphicsProgram3D:
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
-        self.shader.set_light_position(self.view_matrix.eye.x,self.view_matrix.eye.y+2,self.view_matrix.eye.z)
+        self.shader.set_light_position(self.view_matrix.eye.x,2,self.view_matrix.eye.z)
         self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
         self.shader.set_light_ambient(0.2,0.2,0.2)
 

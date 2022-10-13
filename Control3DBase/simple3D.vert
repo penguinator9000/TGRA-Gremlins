@@ -39,7 +39,7 @@ void main(void)
 	v = u_eye_position-position;
 	h = (s+v);
 	lambert = max(0.0,dot(normalize(normal), normalize(s))); 
-	//(normal.length()*s.length()));
+	//lambert = max(0.0,dot(normal, s)/(normal.length()*s.length()));
 	//lambert = 2/s.length();
 	phong =  max(0.0,dot(normalize(normal), normalize(h)));
 	//(normal.length()*h.length()));
@@ -49,7 +49,7 @@ void main(void)
 	//float light_factor_2 = max(dot(normalize(normal), normalize(vec4(-3, -2, -1, 0))), 0.0);
 	//v_color = (light_factor_1 + light_factor_2) * u_color; // ### --- Change this vector (pure white) to color variable --- #####
 
-	//float phongf = pow(phong, u_material_shiny)
+	//phong = pow(phong, u_material_shiny)
 	v_color = u_light_diffuse * u_material_diffuse * lambert;
 	//v_color = u_light_ambient * u_material_ambient + lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * phong;
 

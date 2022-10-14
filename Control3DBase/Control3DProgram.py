@@ -25,9 +25,10 @@ import csv
 global WIN
 WIN=False
 class Light():
-    def __init__(self, pos = Point(4,10,4), color = (1,1,1)):
+    def __init__(self, pos = Point(4,10,4), color = (1,1,1), reach = 0):
         self.pos = pos
         self.color = color
+        self.reach = reach
         
     def moveTo():
         pass

@@ -15,6 +15,8 @@ uniform vec4 u_material_diffuse;
 uniform vec4 u_material_ambient;
 uniform vec4 u_material_specular;
 uniform float u_material_shiny;
+uniform float u_light_reach;
+uniform vec4 u_global_ambiance;
 
 uniform vec4 u_eye_position;
 
@@ -25,19 +27,23 @@ void main(void)
 {
 	vec4 position = vec4(a_position.x, a_position.y, a_position.z, 1.0);
 	vec4 normal = vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
-	vec4 s = vec4(0);
-	vec4 v = vec4(0);
-	vec4 h = vec4(0);
-	float lambert = 0.0;
-	float phong = 0.0;
 
 	position = u_model_matrix * position;
 	normal = u_model_matrix * normal;
+
+
+	vec4 s = u_light_position - position;
+	vec4 v = u_eye_position - position;
+	vec4 h = (s+v);
+	float light_intesity =1.0;
+	if u_light_reach != 0{
+		float distance = length(s);
+	}
+
+
+	float lambert = 0.0;
+	float phong = 0.0;
 	
-	s = u_light_position - position;
-	float distance = length(s);
-	v = u_eye_position-position;
-	h = (s+v);
 	//lambert = max(0.0,dot(normalize(normal), normalize(s))); 
 	lambert = max(0.0,dot(normal, s)/(length(normal)*length(s)));
 

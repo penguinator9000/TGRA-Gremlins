@@ -53,6 +53,7 @@ class Shader3D:
         self.matShiLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_shiny")
 
         self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position")
+        self.lightReach             = glGetUniformLocation(self.renderingProgramID, "u_light_reach")    
         
 
 
@@ -94,6 +95,8 @@ class Shader3D:
     
     def set_light_specular(self,r,g,b):
         glUniform4f(self.lightSpeLoc,r,g,b,0)
+    def set_light_reach(self,reach):
+        glUniform1f(self.lightReach,reach)
     
 
 

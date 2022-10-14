@@ -47,7 +47,7 @@ class GraphicalObject:
         self.pos=Point(pos[0],pos[1],pos[2])
         self.size=Vector(size[0],size[1],size[2])
         self.diffuse = (1,1,1)
-        self.ambiance = (0.2,0.2,0.2)
+        self.ambiance = (0.5,0.5,0.5)
         self.specular = (0.1,0.1,0.1)
         self.shiny = 1
 
@@ -137,6 +137,7 @@ class GraphicsProgram3D:
 
         self.shader = Shader3D()
         self.shader.use()
+        self.shader.set_global_ambiance(0.4,0.4,0.4)
 
         # self.model_matrix = ModelMatrix()
         # self.model_matrix.load_identity()
@@ -144,7 +145,8 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,10,6),(0.9,0.9,0.9))
+        self.light1 = Light(Point(6,10,6),(0.9,0.9,0.9),reach= 12, ambiance=(0.2,0.2,0.2))
+        self.light2 = Light(Point(2,2,2),diffuse=(0.5,0.5,0.5), ambiance=(0.1,0.1,0.1),specular=(0.8,0.8,0.8),reach = 5)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -309,11 +311,13 @@ class GraphicsProgram3D:
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
 
         self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
+        self.shader.set_light_reach(self.light1.reach)
+
         r,g,b = self.light1.color
         rd,gd,bd = self.light1.diffuse
         ra,ga,ba = self.light1.ambiance
         rs,gs,bs = self.light1.specular
-    
+        
         self.shader.set_light_diffuse(r*rd,g*gd,b*bd)
         self.shader.set_light_ambient(r*ra,g*ga,b*ba)
         self.shader.set_light_specular(r*rs,g*gs,b*bs)

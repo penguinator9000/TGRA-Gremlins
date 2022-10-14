@@ -54,7 +54,7 @@ class Shader3D:
 
         self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position")
         self.lightReach             = glGetUniformLocation(self.renderingProgramID, "u_light_reach")    
-        
+        self.globalAmbiance         = glGetUniformLocation(self.renderingProgramID, "u_global_ambiance")     
 
 
     def use(self):
@@ -71,6 +71,9 @@ class Shader3D:
         glUniformMatrix4fv(self.viewMatrixLoc, 1, True, matrix_array)
         glUniform4f(self.eyePosLoc,matrix_eye_pos.x,matrix_eye_pos.y,matrix_eye_pos.z,1)
 
+    def set_global_ambiance(self,r,g,b):
+        glUniform4f(self.globalAmbiance,r,g,b,0)
+    
 
     def set_projection_matrix(self, matrix_array):
         glUniformMatrix4fv(self.projectionMatrixLoc, 1, True, matrix_array)

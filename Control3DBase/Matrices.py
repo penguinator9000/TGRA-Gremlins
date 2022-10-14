@@ -157,7 +157,6 @@ class ViewMatrix:
         angSin = sin(angle)
         newN=self.n*angCos+self.v*angSin
         newV=self.n*(-angSin)+self.v*angCos
-        print(angle,newN,newV)
         self.v=newV
         self.n=newN
 

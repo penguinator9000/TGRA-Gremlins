@@ -46,15 +46,22 @@ class Shader3D:
         self.lightDifLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_diffuse")
         self.lightAmbLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_ambient")
         self.lightSpeLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_specular")
+        self.lightReach             = glGetUniformLocation(self.renderingProgramID, "u_light_reach")   
 
         self.matDifLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_diffuse")
         self.matAmbLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_ambient")
         self.matSpeLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_specular")
         self.matShiLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_shiny")
 
-        self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position")
-        self.lightReach             = glGetUniformLocation(self.renderingProgramID, "u_light_reach")    
-        self.globalAmbiance         = glGetUniformLocation(self.renderingProgramID, "u_global_ambiance")     
+        self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position") 
+        self.globalAmbiance         = glGetUniformLocation(self.renderingProgramID, "u_global_ambiance")    
+
+        self.light2PosLoc			= glGetUniformLocation(self.renderingProgramID, "u_light2_position")
+        self.light2DifLoc			= glGetUniformLocation(self.renderingProgramID, "u_light2_diffuse")
+        self.light2AmbLoc			= glGetUniformLocation(self.renderingProgramID, "u_light2_ambient")
+        self.light2SpeLoc			= glGetUniformLocation(self.renderingProgramID, "u_light2_specular")
+        self.light2Reach            = glGetUniformLocation(self.renderingProgramID, "u_light2_reach")   
+ 
 
 
     def use(self):
@@ -112,4 +119,19 @@ class Shader3D:
     def set_material_specular(self,r,g,b,shiny):
         glUniform4f(self.matSpeLoc,r,g,b,0)
         glUniform1f(self.matShiLoc,shiny)
+    
+    
+    def set_light2_position(self,x,y,z):
+        glUniform4f(self.light2PosLoc,x,y,z,1)
+        
+    def set_light2_diffuse(self,r,g,b):
+        glUniform4f(self.light2DifLoc,r,g,b,0)
+    
+    def set_light2_ambient(self,r,g,b):
+        glUniform4f(self.light2AmbLoc,r,g,b,0)
+    
+    def set_light2_specular(self,r,g,b):
+        glUniform4f(self.light2SpeLoc,r,g,b,0)
+    def set_light2_reach(self,reach):
+        glUniform1f(self.light2Reach,reach)
     

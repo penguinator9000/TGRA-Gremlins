@@ -146,7 +146,7 @@ class GraphicsProgram3D:
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
         self.light1 = Light(Point(6,10,6),(0.9,0.9,0.9),reach= 12, ambiance=(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=(0.5,0.5,0.5), ambiance=(0.1,0.1,0.1),specular=(0.8,0.8,0.8),reach = 5)
+        self.light2 = Light(Point(2,2,2),diffuse=(0.5,0,0), ambiance=(0.1,0.1,0.1),specular=(0.8,0,0.8),reach = 5)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -299,13 +299,16 @@ class GraphicsProgram3D:
             global WIN
             WIN=True
             return True
+        self.light2.pos= Point( self.BOI.pos.x,self.BOI.pos.y+0.5,self.BOI.pos.z)
+
         return False 
+        
         
 
     def display(self):
         glEnable(GL_DEPTH_TEST)  ### --- NEED THIS FOR NORMAL 3D BUT MANY EFFECTS BETTER WITH glDisable(GL_DEPTH_TEST) ... try it! --- ###
         
-        glClearColor(0.0, 0.0, 0.0, 1.0)
+        glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
@@ -322,6 +325,17 @@ class GraphicsProgram3D:
         self.shader.set_light_ambient(r*ra,g*ga,b*ba)
         self.shader.set_light_specular(r*rs,g*gs,b*bs)
         
+        self.shader.set_light2_position(self.light2.pos.x,self.light2.pos.y,self.light2.pos.z)
+        self.shader.set_light2_reach(self.light2.reach)
+
+        r,g,b = self.light2.color
+        rd,gd,bd = self.light2.diffuse
+        ra,ga,ba = self.light2.ambiance
+        rs,gs,bs = self.light2.specular
+        
+        self.shader.set_light2_diffuse(r*rd,g*gd,b*bd)
+        self.shader.set_light2_ambient(r*ra,g*ga,b*ba)
+        self.shader.set_light2_specular(r*rs,g*gs,b*bs)
 
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())

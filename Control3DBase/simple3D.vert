@@ -14,7 +14,7 @@ uniform vec4 u_light_specular;
 uniform vec4 u_material_diffuse;
 uniform vec4 u_material_ambient;
 uniform vec4 u_material_specular;
-uniform vec4 u_material_shiny;
+uniform float u_material_shiny;
 
 uniform vec4 u_eye_position;
 
@@ -35,23 +35,23 @@ void main(void)
 	normal = u_model_matrix * normal;
 	
 	s = u_light_position - position;
-
+	float distance = length(s);
 	v = u_eye_position-position;
 	h = (s+v);
-	lambert = max(0.0,dot(normalize(normal), normalize(s))); 
-	//lambert = max(0.0,dot(normal, s)/(normal.length()*s.length()));
-	//lambert = 2/s.length();
+	//lambert = max(0.0,dot(normalize(normal), normalize(s))); 
+	lambert = max(0.0,dot(normal, s)/(length(normal)*length(s)));
+
 	phong =  max(0.0,dot(normalize(normal), normalize(h)));
-	//(normal.length()*h.length()));
+	//(phong = max(0,dot(normal,h)/(normal.length()*h.length()));
 
 	//old lighting
 	//float light_factor_1 = max(dot(normalize(normal), normalize(vec4(1, 2, 3, 0))), 0.0); 
 	//float light_factor_2 = max(dot(normalize(normal), normalize(vec4(-3, -2, -1, 0))), 0.0);
 	//v_color = (light_factor_1 + light_factor_2) * u_color; // ### --- Change this vector (pure white) to color variable --- #####
 
-	//phong = pow(phong, u_material_shiny)
-	v_color = u_light_diffuse * u_material_diffuse * lambert;
-	//v_color = u_light_ambient * u_material_ambient + lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * phong;
+	phong = pow(phong, u_material_shiny);
+	//v_color = u_light_diffuse * u_material_diffuse * lambert;
+	v_color = u_light_ambient * u_material_ambient + (lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * phong);
 
 	position = u_view_matrix * position;
 	position = u_projection_matrix * position;

@@ -48,7 +48,7 @@ class GraphicalObject:
         self.size=Vector(size[0],size[1],size[2])
         self.diffuse = (1,1,1)
         self.ambiance = (0.5,0.5,0.5)
-        self.specular = (0.1,0.1,0.1)
+        self.specular = (0.5,0.5,0.5)
         self.shiny = 1
 
     def draw(self, shader):

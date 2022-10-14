@@ -25,12 +25,14 @@ import csv
 global WIN
 WIN=False
 class Light():
-    def __init__(self, pos = Point(4,10,4), color = (1,1,1)):
+    def __init__(self, pos = Point(4,10,4), color = (1,1,1),diffuse= (1,1,1), ambiance = (0.5,0.5,0.5),specular = (0.25,0.25,0.25), reach=0):
         self.pos = pos
         self.color = color
-        
-    def moveTo():
-        pass
+        self.diffuse = diffuse
+        self.ambiance = ambiance
+        self.specular = specular
+        self.reach = reach
+    
         
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
@@ -81,6 +83,7 @@ class GraphicalObject:
         cpy.specular = self.specular
         cpy.shiny = self.shiny
         return cpy
+    
 
 class BOI(GraphicalObject):
     boingPlaces = Vector(1,0,1)
@@ -90,12 +93,15 @@ class BOI(GraphicalObject):
     rgb = [0,0,0]
     def spinny(self, dtime):
         self.comboSpins += self.spins*dtime 
-        self.model_matrix.add_rotation(sin(self.comboSpins.x),
-                                        sin(self.comboSpins.y),
-                                        sin(self.comboSpins.z))
-        self.color = ((sin(self.comboSpins.x)+1)/2,
-                                        (sin(self.comboSpins.y)+1)/2,
-                                        (sin(self.comboSpins.z)+1)/2)
+        sinComSpin = Vector(sin(self.comboSpins.x),sin(self.comboSpins.y),sin(self.comboSpins.z))
+        self.model_matrix.add_rotation(sinComSpin.x,sinComSpin.y,sinComSpin.z)
+        sinComSpin2 = Vector((sinComSpin.x+1)/2,(sinComSpin.y+1)/2,(sinComSpin.z+1)/2)
+
+        self.diffuse = (sinComSpin2.x,sinComSpin2.y,sinComSpin2.z)
+        self.ambiance =(sinComSpin2.y,sinComSpin2.z,sinComSpin2.x)
+        self.specular =(sinComSpin2.z,sinComSpin2.x,sinComSpin2.y)
+
+        self.color = (1,1,1)
     def kill(self, playerPos, proj):
         diff =  playerPos - self.pos
         if diff.__len__() <  Vector(proj.near,proj.top,proj.right).__len__():
@@ -175,11 +181,14 @@ class GraphicsProgram3D:
                     self.maze[x][z]=temp
 
         self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
+        self.Guy.ambiance = (0.7,0.7,0.7)
         self.GuyRotation = 0
         self.GuyBop = 0
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
-        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))]
+        p= GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
+        p.ambiance=(1,1,1)
+        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
@@ -261,6 +270,7 @@ class GraphicsProgram3D:
         self.Guy2 = self.Guy.copy()
         self.Guy2.update(self.Guy2update[0],self.Guy2update[1],self.Guy2update[2],self.Guy2update[3])
 
+        self.light1.pos= Point( self.view_matrix.eye.x ,self.view_matrix.eye.y+2 ,self.view_matrix.eye.z)
 
         boiWentVec = self.BOI.move(delta_time)
         collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
@@ -297,9 +307,17 @@ class GraphicsProgram3D:
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
-        self.shader.set_light_position(self.view_matrix.eye.x,2,self.view_matrix.eye.z)
-        self.shader.set_light_diffuse(self.light1.color[0],self.light1.color[1],self.light1.color[2])
-        self.shader.set_light_ambient(0.2,0.2,0.2)
+
+        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
+        r,g,b = self.light1.color
+        rd,gd,bd = self.light1.diffuse
+        ra,ga,ba = self.light1.ambiance
+        rs,gs,bs = self.light1.specular
+    
+        self.shader.set_light_diffuse(r*rd,g*gd,b*bd)
+        self.shader.set_light_ambient(r*ra,g*ga,b*ba)
+        self.shader.set_light_specular(r*rs,g*gs,b*bs)
+        
 
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())

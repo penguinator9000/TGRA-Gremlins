@@ -58,6 +58,20 @@ class Vector:
         return Vector(self.y*other.z - self.z*other.y, self.z*other.x - self.x*other.z, self.x*other.y - self.y*other.x)
     def __str__(self) -> str:
         return "|x:"+str(self.x)+", y:"+str(self.y)+", z:"+str(self.z)+" |"
+
+class Color:
+    def __init__(self,r=0,g=0,b=0,a=1):
+        self.r=r
+        self.g=g
+        self.b=b
+        self.a=a
+        self.rgb=(r,g,b)
+        self.rgba=(r,g,b,a)
+    
+    def __getitem__(self,i):
+        return self.rgb[i]
+    
+        
 class Cube:
     def __init__(self):
         self.position_array = [-0.5, -0.5, -0.5,

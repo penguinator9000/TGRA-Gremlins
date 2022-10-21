@@ -35,7 +35,7 @@ class Light():
     
         
 class GraphicalObject:
-    def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =(0.6,0.6,0.6) ):
+    def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =Color(0.6,0.6,0.6) ):
         self.object = shape
         self.model_matrix = ModelMatrix()
         self.model_matrix.load_identity()
@@ -46,9 +46,9 @@ class GraphicalObject:
         self.color = color
         self.pos=Point(pos[0],pos[1],pos[2])
         self.size=Vector(size[0],size[1],size[2])
-        self.diffuse = (1,1,1)
-        self.ambiance = (0.5,0.5,0.5)
-        self.specular = (0.5,0.5,0.5)
+        self.diffuse = Color(1,1,1)
+        self.ambiance = Color(0.5,0.5,0.5)
+        self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
 
     def draw(self, shader):
@@ -90,16 +90,16 @@ class BOI(GraphicalObject):
     radius = Vector(0.25,0.25,0.25).__len__()
     spins = Vector(1,1.2,1.1)
     comboSpins = Vector(0,0,0)
-    rgb = [0,0,0]
+    rgb =Color(0,0,0)
     def spinny(self, dtime):
         self.comboSpins += self.spins*dtime 
         sinComSpin = Vector(sin(self.comboSpins.x),sin(self.comboSpins.y),sin(self.comboSpins.z))
         self.model_matrix.add_rotation(sinComSpin.x,sinComSpin.y,sinComSpin.z)
         sinComSpin2 = Vector((sinComSpin.x+1)/2,(sinComSpin.y+1)/2,(sinComSpin.z+1)/2)
 
-        self.diffuse = (sinComSpin2.x,sinComSpin2.y,sinComSpin2.z)
-        self.ambiance =(sinComSpin2.y,sinComSpin2.z,sinComSpin2.x)
-        self.specular =(sinComSpin2.z,sinComSpin2.x,sinComSpin2.y)
+        self.diffuse  =Color(sinComSpin2.x,sinComSpin2.y,sinComSpin2.z)
+        self.ambiance =Color(sinComSpin2.y,sinComSpin2.z,sinComSpin2.x)
+        self.specular =Color(sinComSpin2.z,sinComSpin2.x,sinComSpin2.y)
 
         self.color = (1,1,1)
     def kill(self, playerPos, proj):
@@ -178,23 +178,23 @@ class GraphicsProgram3D:
                 if first: first = False
                 else:
                     x,z = [(int(val)) for val in row]
-                    temp = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
+                    temp = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
                     self.mazeObjects.append(temp)
                     self.maze[x][z]=temp
 
-        self.Guy= GraphicalObject(D8(),color=(0,0.5,1))
-        self.Guy.ambiance = (0.7,0.7,0.7)
+        self.Guy= GraphicalObject(D8(),color=Color(0,0.5,1))
+        self.Guy.ambiance = Color(0.7,0.7,0.7)
         self.GuyRotation = 0
         self.GuyBop = 0
         self.Guy2= self.Guy.copy()
-        self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),(0.5,0,1)]
-        p= GraphicalObject(Plane(),color=(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
-        p.ambiance=(1,1,1)
-        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
+        self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),Color(0.5,0,1)]
+        p= GraphicalObject(Plane(),color=Color(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
+        p.ambiance=Color(1,1,1)
+        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
-        self.BOI = BOI(c,size=(0.5,0.5,0.5), color = (0.9,0.6,0.6))
+        self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
         self.BOI.randomstart(self)
         self.objects.append(self.BOI)
 

@@ -1,9 +1,11 @@
 attribute vec4 a_position;
 attribute vec4 a_normal;
+attribute vec2 a_uv;
 
 uniform mat4 u_model_matrix;
 uniform mat4 u_view_matrix;
 uniform mat4 u_projection_matrix;
+
 
 
 
@@ -27,12 +29,15 @@ uniform float u_light_count_vert;
 varying vec4 v_normal;
 varying vec4 v_s;
 varying vec4 v_h;
+varying vec2 v_uv;
 
 void main(void)
 {
 	vec4 position = vec4(a_position.x, a_position.y, a_position.z, 1.0);
 	vec4 normal = vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
 	
+	//UV coords
+	v_uv = a_uv;
 	
 	for(int i=0 ; i<u_light_count_vert;i++){
 		position = u_model_matrix * position;
@@ -44,6 +49,7 @@ void main(void)
 
 		v_h = (v_s+v);
 	};
+
 	// float light_intesity =1.0;
 	// if (u_light_reach != 0){
 	// 	float distance = length(s);

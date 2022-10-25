@@ -179,6 +179,15 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
 
+        surface = pygame.image.load(sys.path[0]+"\\textures\\vemilogo.png")
+        tex_string= pygame.image.tostring(surface,"RGBA",1)
+        width=surface.get_width()
+        height=surface.get_height()
+        self.tex_id = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D,self.tex_id)
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
+
+
         c = Cube()
         self.maze=[[None for i in range(MAZE_Max+1)] for ii in range(MAZE_Max+1)]
         self.mazeObjects =[]

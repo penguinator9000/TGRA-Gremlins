@@ -1,6 +1,8 @@
 //varying vec4 v_color;
 uniform vec4 u_global_ambiance;
 
+uniform sampler2D tex01;
+
 uniform vec4 u_light_diffuse;
 uniform vec4 u_light_ambient;
 uniform vec4 u_light_specular;
@@ -16,10 +18,12 @@ uniform float u_material_shiny;
 varying vec4 v_normal;
 varying vec4 v_s;
 varying vec4 v_h;
+varying vec2 v_uv;
 
 
 void main(void)
 {
+    vec4 mat_tex = texture2D(tex01,v_uv);
     //Light 1
     vec4 light;
 
@@ -44,10 +48,11 @@ void main(void)
 
         phong = pow(phong, u_material_shiny);
 
-        light = light+(u_light_ambient * u_material_ambient + lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * phong)* light_intesity;
+        light = light+(u_light_ambient * u_material_ambient * mat_tex + lambert * u_light_diffuse * u_material_diffuse * mat_tex + u_light_specular * u_material_specular * phong)* light_intesity;
     };
     
     //all together
 	
     gl_FragColor = u_global_ambiance*u_material_ambient + light;
+    gl_FragColor.r=gl_FragColor.r*v_uv.x;
 }

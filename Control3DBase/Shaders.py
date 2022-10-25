@@ -38,6 +38,9 @@ class Shader3D:
         self.normalLoc			    = glGetAttribLocation(self.renderingProgramID, "a_normal")
         glEnableVertexAttribArray(self.normalLoc)
 
+        self.uvLoc			    = glGetAttribLocation(self.renderingProgramID, "a_uv")
+        glEnableVertexAttribArray(self.uvLoc)
+
         self.modelMatrixLoc			= glGetUniformLocation(self.renderingProgramID, "u_model_matrix")
         self.viewMatrixLoc			= glGetUniformLocation(self.renderingProgramID, "u_view_matrix")
         self.projectionMatrixLoc	= glGetUniformLocation(self.renderingProgramID, "u_projection_matrix")
@@ -93,6 +96,9 @@ class Shader3D:
 
     def set_normal_attribute(self, vertex_array):
         glVertexAttribPointer(self.normalLoc, 3, GL_FLOAT, False, 0, vertex_array)
+
+    def set_uv_attribute(self, vertex_array):
+        glVertexAttribPointer(self.uvLoc, 3, GL_FLOAT, False, 0, vertex_array)
     
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
@@ -117,9 +123,6 @@ class Shader3D:
 
         L_reachs=light.reach
         glUniform1f(self.lightReach,L_reachs)
-
-
-
 
         
     

@@ -42,6 +42,8 @@ class Shader3D:
         self.projectionMatrixLoc	= glGetUniformLocation(self.renderingProgramID, "u_projection_matrix")
         
         #self.colorLoc= glGetUniformLocation(self.renderingProgramID, "u_color")
+        self.lightCouVerLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_count_vert")
+        self.lightCouFraLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_count_frag")
         self.lightPosLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_position")
         self.lightDifLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_diffuse")
         self.lightAmbLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_ambient")
@@ -94,19 +96,29 @@ class Shader3D:
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
 
-    def set_light_position(self,x,y,z):
-        glUniform4f(self.lightPosLoc,x,y,z,1)
+    def set_lights(self,lights):
+        lights+=[Light()]*(10-len(lights))
         
-    def set_light_diffuse(self,r,g,b):
-        glUniform4f(self.lightDifLoc,r,g,b,0)
-    
-    def set_light_ambient(self,r,g,b):
-        glUniform4f(self.lightAmbLoc,r,g,b,0)
-    
-    def set_light_specular(self,r,g,b):
-        glUniform4f(self.lightSpeLoc,r,g,b,0)
-    def set_light_reach(self,reach):
-        glUniform1f(self.lightReach,reach)
+        glUniform1i(self.lightCouVerLoc,min(10,len(lights)))
+        glUniform1i(self.lightCouFraLoc,min(10,len(lights)))
+
+        L_poss=[l.pos.list()+[0.0] for l in lights]
+        glUniform4fv(self.lightPosLoc,10,L_poss)
+
+        L_diffuses=[list((l.color*l.diffuse).rgba) for l in lights]
+        glUniform4fv(self.lightDifLoc,10,L_diffuses)
+        L_ambiances=[list((l.color*l.ambiance).rgba) for l in lights]
+        glUniform4fv(self.lightAmbLoc,10,L_ambiances)
+        L_speculars=[list((l.color*l.specular).rgba) for l in lights]
+        glUniform4fv(self.lightSpeLoc,10,L_speculars)
+
+        L_reachs=[l.reach for l in lights]
+        glUniform1fv(self.lightReach,10,L_reachs)
+
+
+
+
+        
     
 
 

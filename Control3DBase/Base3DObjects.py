@@ -74,6 +74,9 @@ class Color:
     def __getitem__(self,i):
         return self.rgb[i]
     
+    def __mul__(self, other):
+        return Color(self.r * other.r, self.g * other.g, self.b * other.b,self.a*other.a)
+    
         
 class Cube:
     def __init__(self):
@@ -212,6 +215,17 @@ class Plane:
         
         for i in range(1):
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
+
+class Light():
+    def __init__(self, pos = Point(4,10,4), color = (1,1,1),diffuse= (1,1,1), ambiance = (0.5,0.5,0.5),specular = (0.25,0.25,0.25), reach=0):
+        self.pos = pos
+        self.color = color
+        self.diffuse = diffuse
+        self.ambiance = ambiance
+        self.specular = specular
+        self.reach = reach
+    
+        
 
 class BayesianCurve4P:
     def __init__(self,p1,p2,p3,p4,d=1):

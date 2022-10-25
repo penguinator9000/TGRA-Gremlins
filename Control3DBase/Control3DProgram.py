@@ -24,16 +24,8 @@ MAZE_ofset=1
 import csv
 global WIN
 WIN=False
-class Light():
-    def __init__(self, pos = Point(4,10,4), color = (1,1,1),diffuse= (1,1,1), ambiance = (0.5,0.5,0.5),specular = (0.25,0.25,0.25), reach=0):
-        self.pos = pos
-        self.color = color
-        self.diffuse = diffuse
-        self.ambiance = ambiance
-        self.specular = specular
-        self.reach = reach
-    
-        
+
+
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =Color(0.6,0.6,0.6) ):
         self.object = shape
@@ -83,6 +75,7 @@ class GraphicalObject:
         cpy.specular = self.specular
         cpy.shiny = self.shiny
         return cpy
+
 
 # class GOPortals:#nvm
 #     def __init__(self):
@@ -340,26 +333,8 @@ class GraphicsProgram3D:
         self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
         self.shader.set_light_reach(self.light1.reach)
 
-        r,g,b = self.light1.color
-        rd,gd,bd = self.light1.diffuse
-        ra,ga,ba = self.light1.ambiance
-        rs,gs,bs = self.light1.specular
-        
-        self.shader.set_light_diffuse(r*rd,g*gd,b*bd)
-        self.shader.set_light_ambient(r*ra,g*ga,b*ba)
-        self.shader.set_light_specular(r*rs,g*gs,b*bs)
-        
-        self.shader.set_light2_position(self.light2.pos.x,self.light2.pos.y,self.light2.pos.z)
-        self.shader.set_light2_reach(self.light2.reach)
 
-        r,g,b = self.light2.color
-        rd,gd,bd = self.light2.diffuse
-        ra,ga,ba = self.light2.ambiance
-        rs,gs,bs = self.light2.specular
-        
-        self.shader.set_light2_diffuse(r*rd,g*gd,b*bd)
-        self.shader.set_light2_ambient(r*ra,g*ga,b*ba)
-        self.shader.set_light2_specular(r*rs,g*gs,b*bs)
+        self.shader.set_lights([self.light1,self.light2])
 
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())

@@ -102,7 +102,7 @@ class Shader3D:
         glUniform1i(self.lightCouVerLoc,min(10,len(lights)))
         glUniform1i(self.lightCouFraLoc,min(10,len(lights)))
 
-        L_poss=[l.pos.list()+[0.0] for l in lights]
+        L_poss=[(l.pos.list()+[0.0]) for l in lights]
         glUniform4fv(self.lightPosLoc,10,L_poss)
 
         L_diffuses=[list((l.color*l.diffuse).rgba) for l in lights]

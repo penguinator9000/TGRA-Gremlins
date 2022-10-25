@@ -1,2 +1,4 @@
 
 *.pyc
+Control3DBase/__pycache__/Matrices.cpython-310.pyc
+*.pyc

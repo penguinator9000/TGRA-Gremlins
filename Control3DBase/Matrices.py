@@ -204,14 +204,14 @@ class ProjectionMatrix:
         self.far = F
         
 
-    def set_orthographic(self, left, right, bottom, top, near, far):
+    def set_orthographic(self, left, right, bottom, top, near, far,ortho=True):
         self.left = left
         self.right = right
         self.bottom = bottom
         self.top = top
         self.near = near
         self.far = far
-        self.is_orthographic = True
+        self.is_orthographic = ortho
 
     def get_matrix(self):
         if self.is_orthographic:

@@ -83,7 +83,17 @@ class GraphicalObject:
         cpy.specular = self.specular
         cpy.shiny = self.shiny
         return cpy
-    
+
+# class GOPortals:#nvm
+#     def __init__(self):
+#         self.yRotation=0
+#         self.view_matrix=ViewMatrix()
+#         self.projection_matrix=ProjectionMatrix()
+#         self.pos=Point(0,0,0)
+#     def set_view_matrix(self,playerVM):
+#         self.view_matrix.eye = playerVM.eye-self.pos
+        
+          
 
 class BOI(GraphicalObject):
     boingPlaces = Vector(1,0,1)
@@ -132,6 +142,10 @@ class BOI(GraphicalObject):
 
 class GraphicsProgram3D:
     def __init__(self):
+        B=BayesianCurve4P(p1 = Point(15, 5, 2), p2 = Point(10, 2, 2), p3 = Point(5, 7, 2), p4 = Point(0, 0, 2))
+        print(B[0.75])
+        
+
         pygame.init() 
         pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)
 
@@ -197,6 +211,12 @@ class GraphicsProgram3D:
         self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
         self.BOI.randomstart(self)
         self.objects.append(self.BOI)
+        meshTest=Mesh(3,3,Point(3,0.5,3),Color(1,0,0),"2")
+        meshTest.PointMatrix=[[Point(2,1.5,2),Point(3,1.5,2),Point(4,1.5,2)],
+                              [Point(2,1.5,3),Point(3,2,3),Point(4,1.5,3)],
+                              [Point(2,1.5,4),Point(3,1.5,4),Point(4,1.5,4)]]
+        
+        self.objects.append(meshTest)
 
         '''
         for i in range(20):

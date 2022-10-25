@@ -8,7 +8,7 @@ uniform mat4 u_projection_matrix;
 
 
 //uniform vec4 u_color;
-uniform vec4 u_light_position[10];
+uniform vec4 u_light_position;
 
 
 uniform float u_light2_reach;
@@ -24,9 +24,9 @@ uniform vec4 u_eye_position;
 
 uniform float u_light_count_vert;
 
-varying vec4 v_normal[10];
-varying vec4 v_s[10];
-varying vec4 v_h[10];
+varying vec4 v_normal;
+varying vec4 v_s;
+varying vec4 v_h;
 
 void main(void)
 {
@@ -36,13 +36,13 @@ void main(void)
 	
 	for(int i=0 ; i<u_light_count_vert;i++){
 		position = u_model_matrix * position;
-		v_normal[i] = u_model_matrix * normal;
+		v_normal = u_model_matrix * normal;
 
 		vec4 v = u_eye_position - position;
 
-		v_s[i] = u_light_position[i] - position;
+		v_s = u_light_position - position;
 
-		v_h[i] = (v_s[i]+v);
+		v_h = (v_s+v);
 	};
 	// float light_intesity =1.0;
 	// if (u_light_reach != 0){

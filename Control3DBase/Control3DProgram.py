@@ -68,7 +68,7 @@ class GraphicalObject:
         self.model_matrix.pop_matrix()
         self.model_matrix.push_matrix()
     def copy(self):
-        cpy = GraphicalObject(self.object,color=(self.color[0],self.color[1],self.color[2]))
+        cpy = GraphicalObject(self.object,color=Color(self.color[0],self.color[1],self.color[2]))
         cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
         cpy.ambiance = self.ambiance
         cpy.diffuse = self.diffuse
@@ -157,8 +157,8 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,10,6),(0.9,0.9,0.9),reach= 12, ambiance=(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=(0.5,0,0), ambiance=(0.1,0.1,0.1),specular=(0.8,0,0.8),reach = 5)
+        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
+        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -169,7 +169,6 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         
-        self.shader.set_light_specular(0.2,0.2,0.2)
         self.shader.set_material_specular(0.2,0.2,0.2,1)
 
         self.view_matrix_3P = ViewMatrix()
@@ -330,11 +329,8 @@ class GraphicsProgram3D:
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
 
-        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
-        self.shader.set_light_reach(self.light1.reach)
 
-
-        self.shader.set_lights([self.light1,self.light2])
+        self.shader.set_lights(self.light1)
 
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())

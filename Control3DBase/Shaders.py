@@ -97,25 +97,26 @@ class Shader3D:
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
 
-    def set_lights(self,lights):
-        L_lights=lights+[Light()]*(10-len(lights))
-        count=min(10,len(lights))
+    def set_lights(self,light):
+        
+        count=min(10,1)
         glUniform1f(self.lightCouVerLoc,count)
         glUniform1f(self.lightCouFraLoc,count)
-
+        v=Vector(0,0,0)
         #np.array()?
-        L_poss=[(l.pos.list()+[1.0]) for l in L_lights]
-        glUniform4fv(self.lightPosLoc,10,L_poss)
+        p=v+light.pos
+        L_poss=(p.list()+[1.0])
+        glUniform4f(self.lightPosLoc,L_poss[0],L_poss[1],L_poss[2],L_poss[3])
         
-        L_diffuses=[list((l.color*l.diffuse).rgba) for l in L_lights]
-        glUniform4fv(self.lightDifLoc,10,L_diffuses)
-        L_ambiances=[list((l.color*l.ambiance).rgba) for l in L_lights]
-        glUniform4fv(self.lightAmbLoc,10,L_ambiances)
-        L_speculars=[list((l.color*l.specular).rgba) for l in L_lights]
-        glUniform4fv(self.lightSpeLoc,10,L_speculars)
+        L_diffuses=list((light.color*light.diffuse).rgba)
+        glUniform4f(self.lightDifLoc,L_diffuses[0],L_diffuses[1],L_diffuses[2],L_diffuses[3])
+        L_ambiances=list((light.color*light.ambiance).rgba)
+        glUniform4f(self.lightAmbLoc,L_ambiances[0],L_ambiances[1],L_ambiances[2],L_ambiances[3])
+        L_speculars=list((light.color*light.specular).rgba)
+        glUniform4f(self.lightSpeLoc,L_speculars[0],L_speculars[1],L_speculars[2],L_speculars[3])
 
-        L_reachs=[l.reach for l in L_lights]
-        glUniform1fv(self.lightReach,10,L_reachs)
+        L_reachs=light.reach
+        glUniform1f(self.lightReach,L_reachs)
 
 
 

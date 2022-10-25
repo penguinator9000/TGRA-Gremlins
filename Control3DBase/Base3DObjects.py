@@ -217,7 +217,7 @@ class Plane:
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
 
 class Light():
-    def __init__(self, pos = Point(4,10,4), color = (1,1,1),diffuse= (1,1,1), ambiance = (0.5,0.5,0.5),specular = (0.25,0.25,0.25), reach=0):
+    def __init__(self, pos = Point(4,10,4), color = Color(1,1,1),diffuse= Color(1,1,1), ambiance = Color(0.5,0.5,0.5),specular = Color(0.25,0.25,0.25), reach=0):
         self.pos = pos
         self.color = color
         self.diffuse = diffuse

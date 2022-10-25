@@ -8,7 +8,7 @@ uniform mat4 u_projection_matrix;
 
 
 //uniform vec4 u_color;
-uniform vec4 u_light_position;
+uniform vec4 u_light_position[10];
 
 
 uniform float u_light2_reach;
@@ -22,7 +22,7 @@ uniform vec4 u_eye_position;
 
 //varying vec4 v_color;  //Leave the varying variables alone to begin with
 
-uniform int u_light_count_vert;
+uniform float u_light_count_vert;
 
 varying vec4 v_normal[10];
 varying vec4 v_s[10];
@@ -43,7 +43,7 @@ void main(void)
 		v_s[i] = u_light_position[i] - position;
 
 		v_h[i] = (v_s[i]+v);
-	}
+	};
 	// float light_intesity =1.0;
 	// if (u_light_reach != 0){
 	// 	float distance = length(s);

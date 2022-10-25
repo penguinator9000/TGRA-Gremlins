@@ -1,6 +1,7 @@
 
 from OpenGL.GL import *
 from math import * # trigonometry
+import numpy as np
 
 import sys
 
@@ -97,22 +98,23 @@ class Shader3D:
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
 
     def set_lights(self,lights):
-        lights+=[Light()]*(10-len(lights))
-        
-        glUniform1i(self.lightCouVerLoc,min(10,len(lights)))
-        glUniform1i(self.lightCouFraLoc,min(10,len(lights)))
+        L_lights=lights+[Light()]*(10-len(lights))
+        count=min(10,len(lights))
+        glUniform1f(self.lightCouVerLoc,count)
+        glUniform1f(self.lightCouFraLoc,count)
 
-        L_poss=[(l.pos.list()+[0.0]) for l in lights]
+        #np.array()?
+        L_poss=[(l.pos.list()+[1.0]) for l in L_lights]
         glUniform4fv(self.lightPosLoc,10,L_poss)
-
-        L_diffuses=[list((l.color*l.diffuse).rgba) for l in lights]
+        
+        L_diffuses=[list((l.color*l.diffuse).rgba) for l in L_lights]
         glUniform4fv(self.lightDifLoc,10,L_diffuses)
-        L_ambiances=[list((l.color*l.ambiance).rgba) for l in lights]
+        L_ambiances=[list((l.color*l.ambiance).rgba) for l in L_lights]
         glUniform4fv(self.lightAmbLoc,10,L_ambiances)
-        L_speculars=[list((l.color*l.specular).rgba) for l in lights]
+        L_speculars=[list((l.color*l.specular).rgba) for l in L_lights]
         glUniform4fv(self.lightSpeLoc,10,L_speculars)
 
-        L_reachs=[l.reach for l in lights]
+        L_reachs=[l.reach for l in L_lights]
         glUniform1fv(self.lightReach,10,L_reachs)
 
 

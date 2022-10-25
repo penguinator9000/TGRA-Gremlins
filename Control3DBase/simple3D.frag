@@ -6,7 +6,7 @@ uniform vec4 u_light_ambient[10];
 uniform vec4 u_light_specular[10];
 uniform float u_light_reach[10];
 
-uniform int u_light_count_frag;
+uniform float u_light_count_frag;
 
 uniform vec4 u_material_diffuse;
 uniform vec4 u_material_ambient;
@@ -23,7 +23,7 @@ void main(void)
     //Light 1
     vec4 light;
 
-    for(int i =0 ; i<u_light_count_frag;i++){
+    for(int i = 0 ; i<u_light_count_frag;i++){
         float light_intesity =1.0;
         if (u_light_reach[i] != 0){
             float distance = length(v_s);
@@ -45,7 +45,7 @@ void main(void)
         phong = pow(phong, u_material_shiny);
 
         light = light+(u_light_ambient[i] * u_material_ambient + lambert * u_light_diffuse[i] * u_material_diffuse + u_light_specular[i] * u_material_specular * phong)* light_intesity;
-    }
+    };
     
     //all together
 	

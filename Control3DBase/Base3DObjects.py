@@ -219,8 +219,10 @@ class BayesianCurve4P:
         self.p1=v+p1
         if type(p2)==type(v):
             self.p2=self.p1+p2
+            self.p1p2vec = p2
         else:
             self.p2=v+p2
+            self.p1p2vec = self.p2-self.p1
         self.p4=v+p4
         if type(p3)==type(Vector(0,0,0)):
             self.p3=self.p4+(p3*(-1))
@@ -240,6 +242,33 @@ class BayesianCurve4P:
         """frame of duration"""
         t=f/self.duration
         return self.__getitem__(t)
+
+class LoopBayesianCurves4P:
+    def __init__(self,Curve1,repetitions=2):
+        self.Curvelist=[Curve1]
+        self.ControlePoints=[Curve1.p1,Curve1.p1p2vec,Curve1.p4,Curve1.p3p4vec]
+        repetitions+=repetitions%2
+        self.length=repetitions
+        for i in range(repetitions):
+            X=self.Curvelist[i]
+            p1, v2, p4, v3 = (X.p1,X.p1p2vec,X.p4,X.p3p4vec)
+            C = BayesianCurve4P(p4,v3,v2,p1)
+            self.Curvelist.append(C)
+            self.ControlePoints+=[p1,v2]
+    def __getitem__(self,t):
+        t=t%self.length
+        i=int(t//1)
+        it=t%1
+        return self.Curvelist[i][it]   
+
+    def BuildFromControle(self,ControlePoints=[]):
+        if ControlePoints == []: ControlePoints=self.ControlePoints
+        for i in range(self.length):
+            p1, v2, p4, v3 = self.ControlePoints[i*2:i*2+4]
+            if i == self.length-1:
+                p4,v3=self.ControlePoints[0:2]
+            C = BayesianCurve4P(p1,v2,v3,p4)
+            self.Curvelist[i]=C
 
 def det(M2x2):
     a,b,c,d = M2x2
@@ -329,7 +358,7 @@ class Mesh:
                         shader.set_normal_attribute(normal_array)
                         glDrawArrays(GL_TRIANGLE_FAN, 0, 3)
         
-                    
+    
                     
                         
         

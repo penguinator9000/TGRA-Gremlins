@@ -128,10 +128,14 @@ class Cube:
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0]
-        self.uv_array = [0.0, 0.0,
-                         0.0, 1.0,
+        self.uv_array = [1.0, 1.0,
+                         0.0, 0.0,
                          1.0, 1.0,
-                         1.0, 0.0]*6
+                         0.0, 0.0]*12
+        # self.uv_array = [0.0, 1.0,
+        #                  1.0, 1.0,
+        #                  1.0, 0.0,
+        #                  0.0, 0.0]*12
         
     def draw(self, shader):
         
@@ -195,7 +199,7 @@ class D8:
                             -1,-1,-1 ]
         self.uv_array = [1.0, 0.5,
                          0.0, 1.0,
-                         0.0, 0.0]*8
+                         0.0, 0.0]*16
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
@@ -220,7 +224,7 @@ class Plane:
         self.uv_array = [0.0, 0.0,
                          0.0, 1.0,
                          1.0, 1.0,
-                         1.0, 0.0]
+                         1.0, 0.0]*2
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)

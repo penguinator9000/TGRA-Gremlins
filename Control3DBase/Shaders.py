@@ -58,6 +58,8 @@ class Shader3D:
         self.matAmbLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_ambient")
         self.matSpeLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_specular")
         self.matShiLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_shiny")
+        
+        self.texLoc                 = glGetUniformLocation(self.renderingProgramID, "u_tex01") 
 
         self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position") 
         self.globalAmbiance         = glGetUniformLocation(self.renderingProgramID, "u_global_ambiance")    
@@ -137,6 +139,9 @@ class Shader3D:
     def set_material_specular(self,r,g,b,shiny):
         glUniform4f(self.matSpeLoc,r,g,b,0)
         glUniform1f(self.matShiLoc,shiny)
+    
+    def set_material_texture(self,num):
+        glUniform1i(self.texLoc,num)
     
     
     def set_light2_position(self,x,y,z):

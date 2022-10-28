@@ -100,7 +100,7 @@ class Shader3D:
         glVertexAttribPointer(self.normalLoc, 3, GL_FLOAT, False, 0, vertex_array)
 
     def set_uv_attribute(self, vertex_array):
-        glVertexAttribPointer(self.uvLoc, 3, GL_FLOAT, False, 0, vertex_array)
+        glVertexAttribPointer(self.uvLoc, 2, GL_FLOAT, False, 0, vertex_array)
     
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)

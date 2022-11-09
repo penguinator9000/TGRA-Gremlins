@@ -24,26 +24,32 @@ uniform vec4 u_eye_position;
 
 uniform float u_light_count_vert;
 
-varying vec4 v_normal;
-varying vec4 v_s;
-varying vec4 v_h;
+varying vec4 v_normal[10];
+varying vec4 v_s [10];
+varying vec4 v_h[10];
 
 void main(void)
 {
+	
 	vec4 position = vec4(a_position.x, a_position.y, a_position.z, 1.0);
 	vec4 normal = vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
-	
-	
+	vec4 normal_arr[10];
+	vec4 s_arr[10];  
+	vec4 h_arr[10];
+	position = u_model_matrix * position;
 	for(int i=0 ; i<u_light_count_vert;i++){
-		position = u_model_matrix * position;
-		v_normal = u_model_matrix * normal;
+		
+		normal_arr[i] = u_model_matrix * normal;
 
 		vec4 v = u_eye_position - position;
 
-		v_s = u_light_position - position;
+		s_arr[i] = u_light_position[i] - position;
 
-		v_h = (v_s+v);
-	};
+		h_arr[i] = (s_arr[i]+v);
+	}
+	v_normal = normal_arr;
+	v_s = s_arr;
+	v_h = h_arr;
 	// float light_intesity =1.0;
 	// if (u_light_reach != 0){
 	// 	float distance = length(s);

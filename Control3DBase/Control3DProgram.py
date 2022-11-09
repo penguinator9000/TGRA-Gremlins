@@ -167,14 +167,14 @@ def get_texture(name):
 
 class GraphicsProgram3D:
     def __init__(self):
-        # B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
+        B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
         
-        # L=LoopBayesianCurves4P(B,4)
-        # L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
-        # L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
-        # L.ControlePoints[9]=L.ControlePoints[9]*(8)
+        L=LoopBayesianCurves4P(B,4)
+        L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
+        L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
+        L.ControlePoints[9]=L.ControlePoints[9]*(8)
         
-        # L.BuildFromControle()
+        L.BuildFromControle()
 
         pygame.init() 
         pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)
@@ -252,11 +252,12 @@ class GraphicsProgram3D:
         self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
         self.BOI.randomstart(self)
         self.objects.append(self.BOI)
-        #meshTest=Mesh(2,60,Point(3,-100,3),Color(1,0,0),"2")
-        #meshTest.PointMatrix=[[Point(m/10+3,L[m/10+n/3].y-2.5, n+2) for m in range(60) ] for n in [1,2]]
 
+        meshTest=Mesh(2,60,Point(3,-100,3),Color(1,0,0),"1","All")
+        meshTest.PointMatrix=[[Point(m/10+3,L[m/10+n/3].y-2.5, n+2) for m in range(60) ] for n in [1,2]]
+        meshTest.texture=tile_tex
         
-        #self.objects.append(meshTest)
+        self.objects.append(meshTest)
 
         '''
         for i in range(20):

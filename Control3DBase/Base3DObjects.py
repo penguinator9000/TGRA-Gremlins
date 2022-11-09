@@ -321,12 +321,12 @@ def det(M2x2):
     a,b,c,d = M2x2
     return (a*d)-(b*c)
 class Mesh:
-    def __init__(self,n,m,pos=Point(0,0,0),color=Color(),DrawingMode="1"):
+    def __init__(self,n,m,pos=Point(0,0,0),color=Color(),vertex="1",texture="triangle"):
         self.PointMatrix=[[pos]*m]*n
         self.ColorMatrix=[[color]*m]*n
         
         self.pos=pos
-        self.DrawingMode=DrawingMode
+        self.DrawingMode={"vertex":vertex,"texture":texture}
         #self.position_array=[Point(0,0,0)]*m*n
         #self.normal_array=[Point(0,0,0)]*m*n
         self.nm=(n,m)
@@ -335,14 +335,13 @@ class Mesh:
         self.ambiance = Color(0.5,0.5,0.5)
         self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
-        self.single_uv_array = [1.0, 0.5,
-                         0.0, 1.0,
-                         0.0, 0.0]
+        
         self.model_matrix=[ 1, 0, 0, 0,
                                   0, 1, 0, 0,
                                   0, 0, 1, 0,
                                   0, 0, 0, 1 ]
-        
+        self.texture=None
+        self.spectexture=None
     
     def draw(self,shader):
         n,m=self.nm
@@ -358,20 +357,56 @@ class Mesh:
         
         position_array=[]
         normal_array=[]
+        triangle_uv_array = [1.0, 0.5,
+                             0.0, 1.0,
+                             0.0, 0.0]
+
+        if self.texture != None:
+            glActiveTexture(GL_TEXTURE1)
+            glBindTexture(GL_TEXTURE_2D,self.texture)
+            shader.set_material_texture(1)
+        else:
+            shader.set_material_texture(0)
+        if self.spectexture != None:
+            glActiveTexture(GL_TEXTURE2)
+            glBindTexture(GL_TEXTURE_2D,self.spectexture)
+            shader.set_material_specular_texture(2)
+        else:
+            shader.set_material_specular_texture(0)
 
         if n>1 and m>1:
             for ni in range(n-1):
                 for mi in range(m-1):
-                    if self.DrawingMode == "1":
+                    if self.DrawingMode["vertex"] == "1":
                         p1 = v+(self.PointMatrix[ni][mi])
                         p2 = v+(self.PointMatrix[ni+1][mi])
                         p3 = v+(self.PointMatrix[ni][mi+1])
                         p4 = v+(self.PointMatrix[ni+1][mi+1])
-                    elif self.DrawingMode == "2":
+                        if self.DrawingMode["texture"]=="squere":
+                            squere_uv_array=[0,0,
+                                             1,0,
+                                             0,1,
+                                             1,1]
+                        elif self.DrawingMode["texture"]=="All":
+                            squere_uv_array=[ni/n,mi/m,
+                                             (ni+1)/n,mi/m,
+                                             ni/n,(mi+1)/m,
+                                             (ni+1)/n,(mi+1)/m]
+                    elif self.DrawingMode["vertex"] == "2":
                         p1 = v+(self.PointMatrix[ni+1][mi])
                         p2 = v+(self.PointMatrix[ni][mi])
                         p3 = v+(self.PointMatrix[ni+1][mi+1])
                         p4 = v+(self.PointMatrix[ni][mi+1])
+                        if self.DrawingMode["texture"]=="squere":
+                            squere_uv_array=[1,0,
+                                             0,0,
+                                             1,1,
+                                             0,1]
+                        elif self.DrawingMode["texture"]=="All":
+                            squere_uv_array=[(ni+1)/n,mi/m,
+                                             ni/n,mi/m,
+                                             (ni+1)/n,(mi+1)/m,
+                                             ni/n,(mi+1)/m]
                     
                     # position_array=p1.list()+p2.list()+p3.list()
                     # v1=p2-p1
@@ -406,7 +441,14 @@ class Mesh:
                         normal_array=nv.list()*3
                         shader.set_position_attribute(position_array)
                         shader.set_normal_attribute(normal_array)
-                        shader.set_uv_attribute(self.single_uv_array)
+                        if self.DrawingMode["texture"]=="triangle":
+                            shader.set_uv_attribute(triangle_uv_array)
+                        elif self.DrawingMode["texture"]=="squere" or self.DrawingMode["texture"]=="All":
+                            if l3==p3:
+                                shader.set_uv_attribute(squere_uv_array[:-1])
+                            else:
+                                shader.set_uv_attribute(squere_uv_array[1:])
+                            
                         glDrawArrays(GL_TRIANGLE_FAN, 0, 3)
         
     

@@ -5,7 +5,7 @@ from ctypes import pointer
 from math import *
 from msilib.schema import Class
 from shutil import move
-#from turtle import Screen, pos, position
+from turtle import Screen, color, pos, position
 import random
 
 import pygame
@@ -68,7 +68,7 @@ class GraphicalObject:
         self.model_matrix.pop_matrix()
         self.model_matrix.push_matrix()
     def copy(self):
-        cpy = GraphicalObject(self.object,color=(self.color[0],self.color[1],self.color[2]))
+        cpy = GraphicalObject(self.object,color=Color(self.color[0],self.color[1],self.color[2]))
         cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
         cpy.ambiance = self.ambiance
         cpy.diffuse = self.diffuse
@@ -104,7 +104,7 @@ class BOI(GraphicalObject):
         self.ambiance =Color(sinComSpin2.y,sinComSpin2.z,sinComSpin2.x)
         self.specular =Color(sinComSpin2.z,sinComSpin2.x,sinComSpin2.y)
 
-        self.color = Color(1,1,1)
+        self.color = (1,1,1)
     def kill(self, playerPos, proj):
         diff =  playerPos - self.pos
         if diff.__len__() <  Vector(proj.near,proj.top,proj.right).__len__():
@@ -169,7 +169,6 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         
-        #self.shader.set_light_specular(0.2,0.2,0.2)
         self.shader.set_material_specular(0.2,0.2,0.2,1)
 
         self.view_matrix_3P = ViewMatrix()
@@ -329,10 +328,6 @@ class GraphicsProgram3D:
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
-
-        #self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
-        #self.shader.set_light_reach(self.light1.reach)
-
 
         self.shader.set_lights([self.light1,self.light2])
 

@@ -36,9 +36,9 @@ void main(void)
 	vec4 normal_arr[10];
 	vec4 s_arr[10];  
 	vec4 h_arr[10];
-
+	position = u_model_matrix * position;
 	for(int i=0 ; i<u_light_count_vert;i++){
-		position = u_model_matrix * position;
+		
 		normal_arr[i] = u_model_matrix * normal;
 
 		vec4 v = u_eye_position - position;

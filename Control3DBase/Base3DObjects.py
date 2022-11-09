@@ -76,7 +76,8 @@ class Color:
     
     def __mul__(self, other):
         return Color(self.r * other.r, self.g * other.g, self.b * other.b,self.a*other.a)
-    
+    def __str__(self):
+        return"RGBA - "+str(self.r)+", "+str(self.g)+", "+str(self.b)+", "+str(self.a)
         
 class Cube:
     def __init__(self):
@@ -224,7 +225,14 @@ class Light():
         self.ambiance = ambiance
         self.specular = specular
         self.reach = reach
-    
+    def __str__(self) -> str:
+        L=[str(self.pos) ,
+        str(self.color ),
+        str(self.diffuse) ,
+        str(self.ambiance) ,
+        str(self.specular ),
+        str(self.reach) ]
+        return "L* - "+str(L)
         
 
 class BayesianCurve4P:

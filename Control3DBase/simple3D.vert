@@ -8,7 +8,7 @@ uniform mat4 u_projection_matrix;
 
 
 //uniform vec4 u_color;
-uniform vec4 u_light_position[10];
+uniform vec4[10] u_light_position;
 
 
 uniform float u_light2_reach;

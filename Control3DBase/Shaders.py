@@ -69,6 +69,7 @@ class Shader3D:
         self.matShiLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_shiny")
         
         self.texLoc                 = glGetUniformLocation(self.renderingProgramID, "u_tex01") 
+        self.speTexLoc              = glGetUniformLocation(self.renderingProgramID, "u_tex02")
 
         self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position") 
         self.globalAmbiance         = glGetUniformLocation(self.renderingProgramID, "u_global_ambiance")    
@@ -143,8 +144,6 @@ class Shader3D:
                 glUniform1f(self.lightReach[i],L_reachs[i])
     
         self.all_lights= [ i.copy() for i in L_lights]
-
-        
     
 
 
@@ -160,19 +159,21 @@ class Shader3D:
     
     def set_material_texture(self,num):
         glUniform1i(self.texLoc,num)
+    def set_material_specular_texture(self,num):
+        glUniform1i(self.speTexLoc,num)
     
     
-    def set_light2_position(self,x,y,z):
-        glUniform4f(self.light2PosLoc,x,y,z,1)
+    # def set_light2_position(self,x,y,z):
+    #     glUniform4f(self.light2PosLoc,x,y,z,1)
         
-    def set_light2_diffuse(self,r,g,b):
-        glUniform4f(self.light2DifLoc,r,g,b,0)
+    # def set_light2_diffuse(self,r,g,b):
+    #     glUniform4f(self.light2DifLoc,r,g,b,0)
     
-    def set_light2_ambient(self,r,g,b):
-        glUniform4f(self.light2AmbLoc,r,g,b,0)
+    # def set_light2_ambient(self,r,g,b):
+    #     glUniform4f(self.light2AmbLoc,r,g,b,0)
     
-    def set_light2_specular(self,r,g,b):
-        glUniform4f(self.light2SpeLoc,r,g,b,0)
-    def set_light2_reach(self,reach):
-        glUniform1f(self.light2Reach,reach)
+    # def set_light2_specular(self,r,g,b):
+    #     glUniform4f(self.light2SpeLoc,r,g,b,0)
+    # def set_light2_reach(self,reach):
+    #     glUniform1f(self.light2Reach,reach)
     

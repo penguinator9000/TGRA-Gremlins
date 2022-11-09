@@ -43,12 +43,22 @@ class GraphicalObject:
         self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
         self.texture=None
+        self.spectexture=None
 
     def draw(self, shader):
         if self.texture != None:
-            glActiveTexture(GL_TEXTURE0)
+            glActiveTexture(GL_TEXTURE1)
             glBindTexture(GL_TEXTURE_2D,self.texture)
+            shader.set_material_texture(1)
+        else:
             shader.set_material_texture(0)
+        if self.spectexture != None:
+            glActiveTexture(GL_TEXTURE2)
+            glBindTexture(GL_TEXTURE_2D,self.spectexture)
+            shader.set_material_specular_texture(2)
+        else:
+            shader.set_material_specular_texture(0)
+        
             
         r,g,b = self.color
         rd,gd,bd = self.diffuse
@@ -139,6 +149,22 @@ class BOI(GraphicalObject):
         self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
         self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
 
+def get_texture(name):
+    surface = pygame.image.load(sys.path[0]+name)
+    tex_string= pygame.image.tostring(surface,"RGBA",1)
+    width=surface.get_width()
+    height=surface.get_height()
+    tex_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D,tex_id)
+    glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
+    glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR)
+    glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+
+
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
+    return tex_id
+
 class GraphicsProgram3D:
     def __init__(self):
         # B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
@@ -185,20 +211,14 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
         
-        surface = pygame.image.load(sys.path[0]+"\A2x2tileWhiteMarble.jpg")
-        tex_string= pygame.image.tostring(surface,"RGBA",1)
-        width=surface.get_width()
-        height=surface.get_height()
-        self.tex_id = glGenTextures(1)
-        glBindTexture(GL_TEXTURE_2D,self.tex_id)
-        glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
-        glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR)
-        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-        glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-
-
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
-
+        self.nullTexture = get_texture("/white.png")
+        
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,self.nullTexture)
+        
+        tile_tex=get_texture("/A2x2tileWhiteMarble.jpg")
+        
+        
 
         c = Cube()
         self.maze=[[None for i in range(MAZE_Max+1)] for ii in range(MAZE_Max+1)]
@@ -211,7 +231,7 @@ class GraphicsProgram3D:
                 else:
                     x,z = [(int(val)) for val in row]
                     temp = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
-                    temp.texture = self.tex_id
+                    temp.texture = tile_tex
                     self.mazeObjects.append(temp)
                     self.maze[x][z]=temp
 
@@ -349,14 +369,15 @@ class GraphicsProgram3D:
         
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
-        
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,self.nullTexture)
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
 
         self.shader.set_lights([self.light1,self.light2])
 
         self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
-        glBindTexture(GL_TEXTURE_2D,self.tex_id)
+        # glBindTexture(GL_TEXTURE_2D,self.tex_id)
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:

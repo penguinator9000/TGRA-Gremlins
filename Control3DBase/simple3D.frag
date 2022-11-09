@@ -1,10 +1,10 @@
 //varying vec4 v_color;
 uniform vec4 u_global_ambiance;
 
-uniform vec4 u_light_diffuse;
-uniform vec4 u_light_ambient;
-uniform vec4 u_light_specular;
-uniform float u_light_reach;
+uniform vec4 u_light_diffuse[10];
+uniform vec4 u_light_ambient[10];
+uniform vec4 u_light_specular[10];
+uniform float u_light_reach[10];
 
 uniform float u_light_count_frag;
 
@@ -31,7 +31,7 @@ void main(void)
                 light_intesity = 0;
             }
             else {
-                light_intesity =1- distance/ u_light_reach;
+                light_intesity =1- distance/ u_light_reach[i];
             }
         }
 

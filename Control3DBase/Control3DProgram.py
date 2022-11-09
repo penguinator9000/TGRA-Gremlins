@@ -208,11 +208,11 @@ class GraphicsProgram3D:
         self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
         self.BOI.randomstart(self)
         self.objects.append(self.BOI)
-        meshTest=Mesh(2,60,Point(3,-100,3),Color(1,0,0),"2")
-        meshTest.PointMatrix=[[Point(m/10+3,L[m/10+n/3].y-2.5, n+2) for m in range(60) ] for n in [1,2]]
+        #meshTest=Mesh(2,60,Point(3,-100,3),Color(1,0,0),"2")
+        #meshTest.PointMatrix=[[Point(m/10+3,L[m/10+n/3].y-2.5, n+2) for m in range(60) ] for n in [1,2]]
 
         
-        self.objects.append(meshTest)
+        #self.objects.append(meshTest)
 
         '''
         for i in range(20):

@@ -129,10 +129,20 @@ class Cube:
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0]
+        # self.uv_array = [1.0, 1.0,
+        #                  0.0, 0.0,
+        #                  1.0, 1.0,
+        #                  0.0, 0.0]*12
+        self.uv_array = [0.0, 1.0,
+                         1.0, 1.0,
+                         1.0, 0.0,
+                         0.0, 0.0]*12
+        
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
         
         for i in range(6):
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
@@ -188,11 +198,14 @@ class D8:
                             -1,-1,-1,
                             -1,-1,-1,
                             -1,-1,-1 ]
-        
+        self.uv_array = [1.0, 0.5,
+                         0.0, 1.0,
+                         0.0, 0.0]*16
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
         
         for i in range(8):
             glDrawArrays(GL_TRIANGLE_FAN, i*3, 3)
@@ -209,10 +222,15 @@ class Plane:
                              0.0,1.0,0.0,
                              0.0,1.0,0.0,
                             ]
+        self.uv_array = [0.0, 0.0,
+                         0.0, 1.0,
+                         1.0, 1.0,
+                         1.0, 0.0]*2
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
         
         for i in range(1):
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
@@ -317,16 +335,19 @@ class Mesh:
         self.ambiance = Color(0.5,0.5,0.5)
         self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
-
+        self.single_uv_array = [1.0, 0.5,
+                         0.0, 1.0,
+                         0.0, 0.0]
+        self.model_matrix=[ 1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 ]
         
     
     def draw(self,shader):
         n,m=self.nm
         v=Vector(0,0,0)
-        shader.set_model_matrix([ 1, 0, 0, 0,
-                                  0, 1, 0, 0,
-                                  0, 0, 1, 0,
-                                  0, 0, 0, 1 ])
+        shader.set_model_matrix(self.model_matrix)
         r,g,b = self.color
         rd,gd,bd = self.diffuse
         ra,ga,ba = self.ambiance
@@ -385,6 +406,7 @@ class Mesh:
                         normal_array=nv.list()*3
                         shader.set_position_attribute(position_array)
                         shader.set_normal_attribute(normal_array)
+                        shader.set_uv_attribute(self.single_uv_array)
                         glDrawArrays(GL_TRIANGLE_FAN, 0, 3)
         
     

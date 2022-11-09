@@ -38,6 +38,9 @@ class Shader3D:
         self.normalLoc			    = glGetAttribLocation(self.renderingProgramID, "a_normal")
         glEnableVertexAttribArray(self.normalLoc)
 
+        self.uvLoc			    = glGetAttribLocation(self.renderingProgramID, "a_uv")
+        glEnableVertexAttribArray(self.uvLoc)
+
         self.modelMatrixLoc			= glGetUniformLocation(self.renderingProgramID, "u_model_matrix")
         self.viewMatrixLoc			= glGetUniformLocation(self.renderingProgramID, "u_view_matrix")
         self.projectionMatrixLoc	= glGetUniformLocation(self.renderingProgramID, "u_projection_matrix")
@@ -64,6 +67,8 @@ class Shader3D:
         self.matAmbLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_ambient")
         self.matSpeLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_specular")
         self.matShiLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_shiny")
+        
+        self.texLoc                 = glGetUniformLocation(self.renderingProgramID, "u_tex01") 
 
         self.eyePosLoc              = glGetUniformLocation(self.renderingProgramID, "u_eye_position") 
         self.globalAmbiance         = glGetUniformLocation(self.renderingProgramID, "u_global_ambiance")    
@@ -102,6 +107,9 @@ class Shader3D:
 
     def set_normal_attribute(self, vertex_array):
         glVertexAttribPointer(self.normalLoc, 3, GL_FLOAT, False, 0, vertex_array)
+
+    def set_uv_attribute(self, vertex_array):
+        glVertexAttribPointer(self.uvLoc, 2, GL_FLOAT, False, 0, vertex_array)
     
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
@@ -136,9 +144,6 @@ class Shader3D:
     
         self.all_lights= [ i.copy() for i in L_lights]
 
-
-
-
         
     
 
@@ -152,6 +157,9 @@ class Shader3D:
     def set_material_specular(self,r,g,b,shiny):
         glUniform4f(self.matSpeLoc,r,g,b,0)
         glUniform1f(self.matShiLoc,shiny)
+    
+    def set_material_texture(self,num):
+        glUniform1i(self.texLoc,num)
     
     
     def set_light2_position(self,x,y,z):

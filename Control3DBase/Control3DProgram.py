@@ -198,10 +198,10 @@ class GraphicsProgram3D:
         self.GuyRotation = 0
         self.GuyBop = 0
         self.Guy2= self.Guy.copy()
-        self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),Color(0.5,0,1)]
+        self.Guy2update=[(0.75,0.75,0.75),(0,0.25,0),(0,0,0),Color(0.5,0,1)]
         p= GraphicalObject(Plane(),color=Color(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
         p.ambiance=Color(1,1,1)
-        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
+        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
@@ -276,7 +276,8 @@ class GraphicsProgram3D:
         bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)) 
         self.Guy.reset()
         self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,bopy,self.view_matrix.eye.z))
-        
+        if self.perspective_view==0:
+            self.view_matrix.eye.y=bopy+0.5
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
@@ -339,21 +340,27 @@ class GraphicsProgram3D:
         for obj in self.mazeObjects:
             obj.draw(self.shader)
         self.Guy2.draw(self.shader)
+        self.Guy.draw(self.shader)
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
             self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye)
+            self.Guy.draw(self.shader)
+            self.Guy2.draw(self.shader)
         elif self.perspective_view==2:
             self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
+            self.Guy.draw(self.shader)
+            self.Guy2.draw(self.shader)
         else:
             self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
+            
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:
             obj.draw(self.shader)
-        self.Guy2.draw(self.shader)
+       
         pygame.display.flip()
         
 

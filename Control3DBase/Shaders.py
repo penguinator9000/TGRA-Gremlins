@@ -45,11 +45,20 @@ class Shader3D:
         #self.colorLoc= glGetUniformLocation(self.renderingProgramID, "u_color")
         self.lightCouVerLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_count_vert")
         self.lightCouFraLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_count_frag")
-        self.lightPosLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_position")
-        self.lightDifLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_diffuse")
-        self.lightAmbLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_ambient")
-        self.lightSpeLoc			= glGetUniformLocation(self.renderingProgramID, "u_light_specular")
-        self.lightReach             = glGetUniformLocation(self.renderingProgramID, "u_light_reach")   
+        self.all_lights=[Light()]*10
+
+        self.lightPosLoc			=[0]*10
+        self.lightDifLoc			=[0]*10
+        self.lightAmbLoc			=[0]*10
+        self.lightSpeLoc			=[0]*10
+        self.lightReach             =[0]*10
+        
+        for i in range(10): 
+            self.lightPosLoc[i]			= glGetUniformLocation(self.renderingProgramID, "u_light_position["+str(i)+"]")
+            self.lightDifLoc[i]			= glGetUniformLocation(self.renderingProgramID, "u_light_diffuse["+str(i)+"]")
+            self.lightAmbLoc[i]			= glGetUniformLocation(self.renderingProgramID, "u_light_ambient["+str(i)+"]")
+            self.lightSpeLoc[i]			= glGetUniformLocation(self.renderingProgramID, "u_light_specular["+str(i)+"]")
+            self.lightReach[i]          = glGetUniformLocation(self.renderingProgramID, "u_light_reach["+str(i)+"]")   
 
         self.matDifLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_diffuse")
         self.matAmbLoc	            = glGetUniformLocation(self.renderingProgramID, "u_material_ambient")
@@ -97,26 +106,35 @@ class Shader3D:
     #def set_solid_color(self,r,g,b):
     #    glUniform4f(self.colorLoc, r, g, b, 1.0)
 
-    def set_lights(self,light):
+    def set_lights(self,lights):
         
-        count=min(10,1)
+        L_lights=lights+[Light()]*(10-len(lights))
+        count=min(10,len(lights))
         glUniform1f(self.lightCouVerLoc,count)
         glUniform1f(self.lightCouFraLoc,count)
-        v=Vector(0,0,0)
-        #np.array()?
-        p=v+light.pos
-        L_poss=(p.list()+[1.0])
-        glUniform4f(self.lightPosLoc,L_poss[0],L_poss[1],L_poss[2],L_poss[3])
         
-        L_diffuses=list((light.color*light.diffuse).rgba)
-        glUniform4f(self.lightDifLoc,L_diffuses[0],L_diffuses[1],L_diffuses[2],L_diffuses[3])
-        L_ambiances=list((light.color*light.ambiance).rgba)
-        glUniform4f(self.lightAmbLoc,L_ambiances[0],L_ambiances[1],L_ambiances[2],L_ambiances[3])
-        L_speculars=list((light.color*light.specular).rgba)
-        glUniform4f(self.lightSpeLoc,L_speculars[0],L_speculars[1],L_speculars[2],L_speculars[3])
+        #np.array()?
+        L_poss=[l.pos for l in L_lights]
+        L_diffuses=[(l.color*l.diffuse) for l in L_lights]
+        L_ambiances=[(l.color*l.ambiance) for l in L_lights]
+        L_speculars=[(l.color*l.specular) for l in L_lights]
+        L_reachs=[l.reach for l in L_lights]
 
-        L_reachs=light.reach
-        glUniform1f(self.lightReach,L_reachs)
+        for i in range(count):
+            l = self.all_lights[i]
+            if L_poss[i] != l.pos:
+                
+                glUniform4f(self.lightPosLoc[i],L_poss[i].x,L_poss[i].y,L_poss[i].z,0)
+            if L_diffuses[i] != (l.color*l.diffuse):
+                glUniform4f(self.lightDifLoc[i],L_diffuses[i].r,L_diffuses[i].g,L_diffuses[i].b,L_diffuses[i].a)
+            if L_ambiances[i] != (l.color*l.ambiance):
+                glUniform4f(self.lightAmbLoc[i],L_ambiances[i].r,L_ambiances[i].g,L_ambiances[i].b,L_ambiances[i].a)
+            if L_speculars[i] != (l.color*l.specular):
+                glUniform4f(self.lightSpeLoc[i],L_speculars[i].r,L_speculars[i].g,L_speculars[i].b,L_speculars[i].a)
+            if L_reachs[i] != l.reach:
+                glUniform1f(self.lightReach[i],L_reachs[i])
+    
+        self.all_lights= [ i.copy() for i in L_lights]
 
 
 

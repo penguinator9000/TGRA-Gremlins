@@ -24,7 +24,7 @@ varying vec2 v_uv;
 void main(void)
 {
     vec4 mat_tex = texture2D(u_tex01,v_uv);
-    vec4 spe_tex = texture2D(u_tex01,v_uv);
+    vec4 spe_tex = texture2D(u_tex02,v_uv);
     //Light 1
     vec4 light = vec4(0);
 

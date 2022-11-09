@@ -150,7 +150,7 @@ class BOI(GraphicalObject):
         self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
 
 def get_texture(name):
-    surface = pygame.image.load(sys.path[0]+name)
+    surface = pygame.image.load(sys.path[0]+"/"+name)
     tex_string= pygame.image.tostring(surface,"RGBA",1)
     width=surface.get_width()
     height=surface.get_height()
@@ -190,7 +190,7 @@ class GraphicsProgram3D:
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
         self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
+        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0.8,0.8),reach = 10)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -211,12 +211,13 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
         
-        self.nullTexture = get_texture("/white.png")
+        self.nullTexture = get_texture("white.png")
         
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
         
-        tile_tex=get_texture("/A2x2tileWhiteMarble.jpg")
+        tile_tex=get_texture("A2x2tileWhiteMarble.jpg")
+        rand_spec_tex=get_texture("A-Java-G.png")
         
         
 
@@ -230,10 +231,11 @@ class GraphicsProgram3D:
                 if first: first = False
                 else:
                     x,z = [(int(val)) for val in row]
-                    temp = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
-                    temp.texture = tile_tex
-                    self.mazeObjects.append(temp)
-                    self.maze[x][z]=temp
+                    box = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
+                    box.texture = tile_tex
+                    box.spectexture=rand_spec_tex
+                    self.mazeObjects.append(box)
+                    self.maze[x][z]=box
 
         self.Guy= GraphicalObject(D8(),color=Color(0,0.5,1))
         self.Guy.ambiance = Color(0.7,0.7,0.7)
@@ -265,6 +267,7 @@ class GraphicsProgram3D:
 
         self.perspective_max=2
         self.perspective_view=0
+        self.map_on=False
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -281,6 +284,8 @@ class GraphicsProgram3D:
         self.e_key_down = False
         self.r_key_down = False
         self.f_key_down = False
+
+        
 
 
     def update(self):
@@ -369,35 +374,39 @@ class GraphicsProgram3D:
         
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
+        
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
-        glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
 
         self.shader.set_lights([self.light1,self.light2])
 
-        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
-        self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
-        # glBindTexture(GL_TEXTURE_2D,self.tex_id)
-        for obj in self.objects:
-            obj.draw(self.shader)
-        for obj in self.mazeObjects:
-            obj.draw(self.shader)
-        self.Guy2.draw(self.shader)
-        self.Guy.draw(self.shader)
+        if self.map_on:
+            glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
+            self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
+            
+
+            for obj in self.objects:
+                obj.draw(self.shader)
+            for obj in self.mazeObjects:
+                obj.draw(self.shader)
+            self.Guy2.draw(self.shader)
+            self.Guy.draw(self.shader)
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
             self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye)
-            self.Guy.draw(self.shader)
-            self.Guy2.draw(self.shader)
+            
         elif self.perspective_view==2:
             self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
-            self.Guy.draw(self.shader)
-            self.Guy2.draw(self.shader)
         else:
             self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
             
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+        
+        if self.perspective_view!=0:
+            self.Guy.draw(self.shader)
+            self.Guy2.draw(self.shader)
 
         for obj in self.objects:
             obj.draw(self.shader)
@@ -422,6 +431,8 @@ class GraphicsProgram3D:
 
                     if event.key == K_SPACE:
                         self.perspective_view = (self.perspective_view+1)%self.perspective_max 
+                    if event.key == K_m:
+                        self.map_on=(not self.map_on)
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 

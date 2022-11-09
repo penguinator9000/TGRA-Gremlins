@@ -233,7 +233,14 @@ class Light():
         str(self.specular ),
         str(self.reach) ]
         return "L* - "+str(L)
-        
+    
+    def copy(self):
+        return Light(self.pos ,
+        self.color,
+        self.diffuse,
+        self.ambiance,
+        self.specular,
+        self.reach)    
 
 class BayesianCurve4P:
     def __init__(self,p1,p2,p3,p4,d=1):

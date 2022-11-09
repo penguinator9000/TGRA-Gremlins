@@ -135,14 +135,14 @@ class BOI(GraphicalObject):
 
 class GraphicsProgram3D:
     def __init__(self):
-        B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
-        print(B[0.75])
-        L=LoopBayesianCurves4P(B,4)
-        L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
-        L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
-        L.ControlePoints[9]=L.ControlePoints[9]*(8)
-        print([str(i)for i in L.ControlePoints])
-        L.BuildFromControle()
+        # B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
+        
+        # L=LoopBayesianCurves4P(B,4)
+        # L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
+        # L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
+        # L.ControlePoints[9]=L.ControlePoints[9]*(8)
+        
+        # L.BuildFromControle()
 
         pygame.init() 
         pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)

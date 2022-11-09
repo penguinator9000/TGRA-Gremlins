@@ -122,9 +122,8 @@ class Shader3D:
 
         for i in range(count):
             l = self.all_lights[i]
-            if i ==0:
-                print(L_poss[i],"?=", l.pos)
             if L_poss[i] != l.pos:
+                
                 glUniform4f(self.lightPosLoc[i],L_poss[i].x,L_poss[i].y,L_poss[i].z,0)
             if L_diffuses[i] != (l.color*l.diffuse):
                 glUniform4f(self.lightDifLoc[i],L_diffuses[i].r,L_diffuses[i].g,L_diffuses[i].b,L_diffuses[i].a)
@@ -134,8 +133,8 @@ class Shader3D:
                 glUniform4f(self.lightSpeLoc[i],L_speculars[i].r,L_speculars[i].g,L_speculars[i].b,L_speculars[i].a)
             if L_reachs[i] != l.reach:
                 glUniform1f(self.lightReach[i],L_reachs[i])
-        print(self.all_lights[0].pos)
-        self.all_lights= L_lights
+    
+        self.all_lights= [ i.copy() for i in L_lights]
 
 
 

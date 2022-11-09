@@ -1,10 +1,10 @@
 //varying vec4 v_color;
 uniform vec4 u_global_ambiance;
 
-uniform vec4[10] u_light_diffuse;
-uniform vec4[10] u_light_ambient;
-uniform vec4[10] u_light_specular;
-uniform float[10] u_light_reach;
+uniform vec4 u_light_diffuse[10];
+uniform vec4 u_light_ambient[10];
+uniform vec4 u_light_specular[10];
+uniform float u_light_reach[10];
 
 uniform float u_light_count_frag;
 
@@ -13,9 +13,9 @@ uniform vec4 u_material_ambient;
 uniform vec4 u_material_specular;
 uniform float u_material_shiny;
 
-varying vec4 v_normal;
-varying vec4 v_s;
-varying vec4 v_h;
+varying vec4 v_normal[10];
+varying vec4 v_s[10];
+varying vec4 v_h[10];
 
 
 void main(void)
@@ -26,7 +26,7 @@ void main(void)
     for(int i = 0 ; i<u_light_count_frag;i++){
         float light_intesity =1.0;
         if (u_light_reach[i] != 0){
-            float distance = length(v_s);
+            float distance = length(v_s[i]);
             if( distance > u_light_reach[i]){
                 light_intesity = 0;
             }
@@ -38,9 +38,9 @@ void main(void)
         float lambert = 0.0;
         float phong = 0.0;
 
-        lambert = max(0.0,dot(v_normal, v_s)/(length(v_normal)*length(v_s)));
+        lambert = max(0.0,dot(v_normal[i], v_s[i])/(length(v_normal[i])*length(v_s[i])));
 
-        phong =  max(0.0,dot(normalize(v_normal), normalize(v_h)));
+        phong =  max(0.0,dot(normalize(v_normal[i]), normalize(v_h[i])));
 
         phong = pow(phong, u_material_shiny);
 

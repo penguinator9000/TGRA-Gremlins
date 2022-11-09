@@ -114,24 +114,25 @@ class Shader3D:
         glUniform1f(self.lightCouFraLoc,count)
 
         #np.array()?
-        L_poss=[(l.pos.list()+[1.0]) for l in L_lights]
-        L_diffuses=[list((l.color*l.diffuse).rgba) for l in L_lights]
-        L_ambiances=[list((l.color*l.ambiance).rgba) for l in L_lights]
-        L_speculars=[list((l.color*l.specular).rgba) for l in L_lights]
+        v=Vector(0,0,0)
+        L_poss=[l.pos for l in L_lights]
+        L_diffuses=[(l.color*l.diffuse) for l in L_lights]
+        L_ambiances=[(l.color*l.ambiance) for l in L_lights]
+        L_speculars=[(l.color*l.specular) for l in L_lights]
         L_reachs=[l.reach for l in L_lights]
 
         for i in range(count):
             l = self.all_lights[i]
-            if L_poss[i] != (l.pos.list()+[1.0]):
-                glUniform4f(self.lightPosLoc[i],10,L_poss[i])
-            if L_diffuses[i] != list((l.color*l.diffuse).rgba):
-                glUniform4f(self.lightDifLoc[i],10,L_diffuses[i])
-            if L_ambiances[i] != list((l.color*l.ambiance).rgba):
-                glUniform4f(self.lightAmbLoc[i],10,L_ambiances[i])
-            if L_speculars[i] != list((l.color*l.specular).rgba):
-                glUniform4f(self.lightSpeLoc[i],10,L_speculars[i])
+            if L_poss[i] != l.pos:
+                glUniform4f(self.lightPosLoc[i],L_poss[i].x,L_poss[i].y,L_poss[i].z,0)
+            if L_diffuses[i] != (l.color*l.diffuse):
+                glUniform4f(self.lightDifLoc[i],L_diffuses[i].r,L_diffuses[i].g,L_diffuses[i].b,L_diffuses[i].a)
+            if L_ambiances[i] != (l.color*l.ambiance):
+                glUniform4f(self.lightAmbLoc[i],L_ambiances[i].r,L_ambiances[i].g,L_ambiances[i].b,L_ambiances[i].a)
+            if L_speculars[i] != (l.color*l.specular):
+                glUniform4f(self.lightSpeLoc[i],L_speculars[i].r,L_speculars[i].g,L_speculars[i].b,L_speculars[i].a)
             if L_reachs[i] != l.reach:
-                glUniform1f(self.lightReach[i],10,L_reachs[i])
+                glUniform1f(self.lightReach[i],L_reachs[i])
 
         self.all_lights= L_lights
 

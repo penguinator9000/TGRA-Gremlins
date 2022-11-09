@@ -5,7 +5,7 @@ from ctypes import pointer
 from math import *
 from msilib.schema import Class
 from shutil import move
-from turtle import Screen, color, pos, position
+#from turtle import Screen, pos, position
 import random
 
 import pygame
@@ -104,7 +104,7 @@ class BOI(GraphicalObject):
         self.ambiance =Color(sinComSpin2.y,sinComSpin2.z,sinComSpin2.x)
         self.specular =Color(sinComSpin2.z,sinComSpin2.x,sinComSpin2.y)
 
-        self.color = (1,1,1)
+        self.color = Color(1,1,1)
     def kill(self, playerPos, proj):
         diff =  playerPos - self.pos
         if diff.__len__() <  Vector(proj.near,proj.top,proj.right).__len__():
@@ -157,8 +157,8 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,10,6),(0.9,0.9,0.9),reach= 12, ambiance=(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=(0.5,0,0), ambiance=(0.1,0.1,0.1),specular=(0.8,0,0.8),reach = 5)
+        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
+        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -169,7 +169,7 @@ class GraphicsProgram3D:
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
         
-        self.shader.set_light_specular(0.2,0.2,0.2)
+        #self.shader.set_light_specular(0.2,0.2,0.2)
         self.shader.set_material_specular(0.2,0.2,0.2,1)
 
         self.view_matrix_3P = ViewMatrix()
@@ -330,8 +330,8 @@ class GraphicsProgram3D:
         
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
 
-        self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
-        self.shader.set_light_reach(self.light1.reach)
+        #self.shader.set_light_position(self.light1.pos.x,self.light1.pos.y,self.light1.pos.z)
+        #self.shader.set_light_reach(self.light1.reach)
 
 
         self.shader.set_lights([self.light1,self.light2])

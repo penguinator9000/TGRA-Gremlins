@@ -1,5 +1,6 @@
 attribute vec4 a_position;
 attribute vec4 a_normal;
+attribute vec2 a_uv;
 
 uniform mat4 u_model_matrix;
 uniform mat4 u_view_matrix;
@@ -7,8 +8,9 @@ uniform mat4 u_projection_matrix;
 
 
 
+
 //uniform vec4 u_color;
-uniform vec4 u_light_position;
+uniform vec4 u_light_position[10];
 
 
 uniform float u_light2_reach;
@@ -24,77 +26,37 @@ uniform vec4 u_eye_position;
 
 uniform float u_light_count_vert;
 
-varying vec4 v_normal;
-varying vec4 v_s;
-varying vec4 v_h;
+varying vec4 v_normal[10];
+varying vec4 v_s [10];
+varying vec4 v_h[10];
+varying vec2 v_uv;
 
 void main(void)
 {
+	
 	vec4 position = vec4(a_position.x, a_position.y, a_position.z, 1.0);
 	vec4 normal = vec4(a_normal.x, a_normal.y, a_normal.z, 0.0);
+	vec4 normal_arr[10];
+	vec4 s_arr[10];  
+	vec4 h_arr[10];
+	position = u_model_matrix * position;
 	
+	//UV coords
+	v_uv = a_uv;
 	
 	for(int i=0 ; i<u_light_count_vert;i++){
-		position = u_model_matrix * position;
-		v_normal = u_model_matrix * normal;
+		
+		normal_arr[i] = u_model_matrix * normal;
 
 		vec4 v = u_eye_position - position;
 
-		v_s = u_light_position - position;
+		s_arr[i] = u_light_position[i] - position;
 
-		v_h = (v_s+v);
-	};
-	// float light_intesity =1.0;
-	// if (u_light_reach != 0){
-	// 	float distance = length(s);
-	// 	if( distance > u_light_reach){
-	// 		light_intesity = 0;
-	// 	}
-	// 	else {
-	// 		light_intesity = distance/ u_light_reach;
-	// 	}
-	// }
-
-
-	// float lambert = 0.0;
-	// float phong = 0.0;
-
-	// lambert = max(0.0,dot(normal, s)/(length(normal)*length(s)));
-
-	// phong =  max(0.0,dot(normalize(normal), normalize(h)));
-
-	// phong = pow(phong, u_material_shiny);
-
-	// light1 = (u_light_ambient * u_material_ambient + lambert * u_light_diffuse * u_material_diffuse + u_light_specular * u_material_specular * phong)* light_intesity;
-	
-	// vec4 light2 = vec4(0);
-
-	// vec4 v2 = u_eye_position - position;
-
-	// vec4 s2 = u_light2_position - position;
-	
-	// vec4 h2 = (s2+v2);
-	// float light2_intesity =1.0;
-	// if (u_light2_reach != 0){
-	// 	float distance2 = length(s2);
-	// 	if( distance2 > u_light2_reach){
-	// 		light2_intesity = 0;
-	// 	}
-	// 	else {
-	// 		light2_intesity = distance2/ u_light2_reach;
-	// 	}
-	// }
-
-	// float lambert2 = 0.0;
-	// float phong2 = 0.0;
-
-	// lambert2 = max(0.0,dot(normal, s2)/(length(normal)*length(s2)));
-
-	// phong2 =  max(0.0,dot(normalize(normal), normalize(h2)));
-
-	// phong2 = pow(phong2, u_material_shiny);
-
-	// light2 = (u_light2_ambient * u_material_ambient + lambert2 * u_light2_diffuse * u_material_diffuse + u_light2_specular * u_material_specular * phong2)* light2_intesity;
+		h_arr[i] = (s_arr[i]+v);
+	}
+	v_normal = normal_arr;
+	v_s = s_arr;
+	v_h = h_arr;
 	
 	position = u_view_matrix * position;
 	position = u_projection_matrix * position;

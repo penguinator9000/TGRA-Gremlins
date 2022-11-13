@@ -2,3 +2,7 @@
 *.pyc
 Control3DBase/__pycache__/Matrices.cpython-310.pyc
 *.pyc
+Control3DBase/__pycache__/Base3DObjects.cpython-310.pyc
+Control3DBase/__pycache__/Matrices.cpython-310.pyc
+Control3DBase/__pycache__/Shaders.cpython-310.pyc
+*.pyc

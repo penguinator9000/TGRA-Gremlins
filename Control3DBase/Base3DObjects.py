@@ -76,7 +76,8 @@ class Color:
     
     def __mul__(self, other):
         return Color(self.r * other.r, self.g * other.g, self.b * other.b,self.a*other.a)
-    
+    def __str__(self):
+        return"RGBA - "+str(self.r)+", "+str(self.g)+", "+str(self.b)+", "+str(self.a)
         
 class Cube:
     def __init__(self):
@@ -128,10 +129,20 @@ class Cube:
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0,
                             1.0, 0.0, 0.0]
+        # self.uv_array = [1.0, 1.0,
+        #                  0.0, 0.0,
+        #                  1.0, 1.0,
+        #                  0.0, 0.0]*12
+        self.uv_array = [0.0, 1.0,
+                         1.0, 1.0,
+                         1.0, 0.0,
+                         0.0, 0.0]*12
+        
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
         
         for i in range(6):
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
@@ -187,11 +198,14 @@ class D8:
                             -1,-1,-1,
                             -1,-1,-1,
                             -1,-1,-1 ]
-        
+        self.uv_array = [1.0, 0.5,
+                         0.0, 1.0,
+                         0.0, 0.0]*16
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
         
         for i in range(8):
             glDrawArrays(GL_TRIANGLE_FAN, i*3, 3)
@@ -208,10 +222,15 @@ class Plane:
                              0.0,1.0,0.0,
                              0.0,1.0,0.0,
                             ]
+        self.uv_array = [0.0, 0.0,
+                         0.0, 1.0,
+                         1.0, 1.0,
+                         1.0, 0.0]*2
     def draw(self, shader):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
+        shader.set_uv_attribute(self.uv_array)
         
         for i in range(1):
             glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
@@ -224,8 +243,22 @@ class Light():
         self.ambiance = ambiance
         self.specular = specular
         self.reach = reach
+    def __str__(self) -> str:
+        L=[str(self.pos) ,
+        str(self.color ),
+        str(self.diffuse) ,
+        str(self.ambiance) ,
+        str(self.specular ),
+        str(self.reach) ]
+        return "L* - "+str(L)
     
-        
+    def copy(self):
+        return Light(self.pos ,
+        self.color,
+        self.diffuse,
+        self.ambiance,
+        self.specular,
+        self.reach)    
 
 class BayesianCurve4P:
     def __init__(self,p1,p2,p3,p4,d=1):
@@ -288,12 +321,12 @@ def det(M2x2):
     a,b,c,d = M2x2
     return (a*d)-(b*c)
 class Mesh:
-    def __init__(self,n,m,pos=Point(0,0,0),color=Color(),DrawingMode="1"):
+    def __init__(self,n,m,pos=Point(0,0,0),color=Color(),vertex="1",texture="triangle"):
         self.PointMatrix=[[pos]*m]*n
         self.ColorMatrix=[[color]*m]*n
         
         self.pos=pos
-        self.DrawingMode=DrawingMode
+        self.DrawingMode={"vertex":vertex,"texture":texture}
         #self.position_array=[Point(0,0,0)]*m*n
         #self.normal_array=[Point(0,0,0)]*m*n
         self.nm=(n,m)
@@ -302,16 +335,18 @@ class Mesh:
         self.ambiance = Color(0.5,0.5,0.5)
         self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
-
         
+        self.model_matrix=[ 1, 0, 0, 0,
+                                  0, 1, 0, 0,
+                                  0, 0, 1, 0,
+                                  0, 0, 0, 1 ]
+        self.texture=None
+        self.spectexture=None
     
     def draw(self,shader):
         n,m=self.nm
         v=Vector(0,0,0)
-        shader.set_model_matrix([ 1, 0, 0, 0,
-                                  0, 1, 0, 0,
-                                  0, 0, 1, 0,
-                                  0, 0, 0, 1 ])
+        shader.set_model_matrix(self.model_matrix)
         r,g,b = self.color
         rd,gd,bd = self.diffuse
         ra,ga,ba = self.ambiance
@@ -322,20 +357,56 @@ class Mesh:
         
         position_array=[]
         normal_array=[]
+        triangle_uv_array = [1.0, 0.5,
+                             0.0, 1.0,
+                             0.0, 0.0]
+
+        if self.texture != None:
+            glActiveTexture(GL_TEXTURE1)
+            glBindTexture(GL_TEXTURE_2D,self.texture)
+            shader.set_material_texture(1)
+        else:
+            shader.set_material_texture(0)
+        if self.spectexture != None:
+            glActiveTexture(GL_TEXTURE2)
+            glBindTexture(GL_TEXTURE_2D,self.spectexture)
+            shader.set_material_specular_texture(2)
+        else:
+            shader.set_material_specular_texture(0)
 
         if n>1 and m>1:
             for ni in range(n-1):
                 for mi in range(m-1):
-                    if self.DrawingMode == "1":
+                    if self.DrawingMode["vertex"] == "1":
                         p1 = v+(self.PointMatrix[ni][mi])
                         p2 = v+(self.PointMatrix[ni+1][mi])
                         p3 = v+(self.PointMatrix[ni][mi+1])
                         p4 = v+(self.PointMatrix[ni+1][mi+1])
-                    elif self.DrawingMode == "2":
+                        if self.DrawingMode["texture"]=="squere":
+                            squere_uv_array=[0,0,
+                                             1,0,
+                                             0,1,
+                                             1,1]
+                        elif self.DrawingMode["texture"]=="All":
+                            squere_uv_array=[ni/n,mi/m,
+                                             (ni+1)/n,mi/m,
+                                             ni/n,(mi+1)/m,
+                                             (ni+1)/n,(mi+1)/m]
+                    elif self.DrawingMode["vertex"] == "2":
                         p1 = v+(self.PointMatrix[ni+1][mi])
                         p2 = v+(self.PointMatrix[ni][mi])
                         p3 = v+(self.PointMatrix[ni+1][mi+1])
                         p4 = v+(self.PointMatrix[ni][mi+1])
+                        if self.DrawingMode["texture"]=="squere":
+                            squere_uv_array=[1,0,
+                                             0,0,
+                                             1,1,
+                                             0,1]
+                        elif self.DrawingMode["texture"]=="All":
+                            squere_uv_array=[(ni+1)/n,mi/m,
+                                             ni/n,mi/m,
+                                             (ni+1)/n,(mi+1)/m,
+                                             ni/n,(mi+1)/m]
                     
                     # position_array=p1.list()+p2.list()+p3.list()
                     # v1=p2-p1
@@ -370,6 +441,14 @@ class Mesh:
                         normal_array=nv.list()*3
                         shader.set_position_attribute(position_array)
                         shader.set_normal_attribute(normal_array)
+                        if self.DrawingMode["texture"]=="triangle":
+                            shader.set_uv_attribute(triangle_uv_array)
+                        elif self.DrawingMode["texture"]=="squere" or self.DrawingMode["texture"]=="All":
+                            if l3==p3:
+                                shader.set_uv_attribute(squere_uv_array[:-1])
+                            else:
+                                shader.set_uv_attribute(squere_uv_array[1:])
+                            
                         glDrawArrays(GL_TRIANGLE_FAN, 0, 3)
         
     

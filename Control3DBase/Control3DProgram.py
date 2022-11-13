@@ -42,8 +42,24 @@ class GraphicalObject:
         self.ambiance = Color(0.5,0.5,0.5)
         self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
+        self.texture=None
+        self.spectexture=None
 
     def draw(self, shader):
+        if self.texture != None:
+            glActiveTexture(GL_TEXTURE1)
+            glBindTexture(GL_TEXTURE_2D,self.texture)
+            shader.set_material_texture(1)
+        else:
+            shader.set_material_texture(0)
+        if self.spectexture != None:
+            glActiveTexture(GL_TEXTURE2)
+            glBindTexture(GL_TEXTURE_2D,self.spectexture)
+            shader.set_material_specular_texture(2)
+        else:
+            shader.set_material_specular_texture(0)
+        
+            
         r,g,b = self.color
         rd,gd,bd = self.diffuse
         ra,ga,ba = self.ambiance
@@ -133,6 +149,22 @@ class BOI(GraphicalObject):
         self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
         self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
 
+def get_texture(name):
+    surface = pygame.image.load(sys.path[0]+"/"+name)
+    tex_string= pygame.image.tostring(surface,"RGBA",1)
+    width=surface.get_width()
+    height=surface.get_height()
+    tex_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D,tex_id)
+    glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
+    glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR)
+    glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+
+
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
+    return tex_id
+
 class GraphicsProgram3D:
     def __init__(self):
         B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
@@ -141,7 +173,7 @@ class GraphicsProgram3D:
         L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
         L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
         L.ControlePoints[9]=L.ControlePoints[9]*(8)
-        print([str(i)for i in L.ControlePoints])
+        
         L.BuildFromControle()
 
         pygame.init() 
@@ -158,7 +190,7 @@ class GraphicsProgram3D:
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
         self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
+        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0.8,0.8),reach = 10)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
@@ -178,6 +210,16 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix = ViewMatrix()
         self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
+        
+        self.nullTexture = get_texture("white.png")
+        
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,self.nullTexture)
+        
+        tile_tex=get_texture("A2x2tileWhiteMarble.jpg")
+        rand_spec_tex=get_texture("A-Java-G.png")
+        
+        
 
         c = Cube()
         self.maze=[[None for i in range(MAZE_Max+1)] for ii in range(MAZE_Max+1)]
@@ -189,19 +231,21 @@ class GraphicsProgram3D:
                 if first: first = False
                 else:
                     x,z = [(int(val)) for val in row]
-                    temp = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
-                    self.mazeObjects.append(temp)
-                    self.maze[x][z]=temp
+                    box = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
+                    box.texture = tile_tex
+                    box.spectexture=rand_spec_tex
+                    self.mazeObjects.append(box)
+                    self.maze[x][z]=box
 
         self.Guy= GraphicalObject(D8(),color=Color(0,0.5,1))
         self.Guy.ambiance = Color(0.7,0.7,0.7)
         self.GuyRotation = 0
         self.GuyBop = 0
         self.Guy2= self.Guy.copy()
-        self.Guy2update=[(1,1,1),(0,0,0),(0,pi/4,0),Color(0.5,0,1)]
+        self.Guy2update=[(0.75,0.75,0.75),(0,0.25,0),(0,0,0),Color(0.5,0,1)]
         p= GraphicalObject(Plane(),color=Color(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
         p.ambiance=Color(1,1,1)
-        self.objects = [self.Guy,GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
+        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
@@ -224,6 +268,7 @@ class GraphicsProgram3D:
 
         self.perspective_max=2
         self.perspective_view=0
+        self.map_on=False
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -240,6 +285,8 @@ class GraphicsProgram3D:
         self.e_key_down = False
         self.r_key_down = False
         self.f_key_down = False
+
+        
 
 
     def update(self):
@@ -277,7 +324,8 @@ class GraphicsProgram3D:
         bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)) 
         self.Guy.reset()
         self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,bopy,self.view_matrix.eye.z))
-        
+        if self.perspective_view==0:
+            self.view_matrix.eye.y=bopy+0.5
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
@@ -328,34 +376,44 @@ class GraphicsProgram3D:
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
-        glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,self.nullTexture)
 
+        self.shader.set_lights([self.light1,self.light2])
 
-        self.shader.set_lights(self.light1)
+        if self.map_on:
+            glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
+            self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
+            
 
-        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
-        self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
-
-        for obj in self.objects:
-            obj.draw(self.shader)
-        for obj in self.mazeObjects:
-            obj.draw(self.shader)
-        self.Guy2.draw(self.shader)
+            for obj in self.objects:
+                obj.draw(self.shader)
+            for obj in self.mazeObjects:
+                obj.draw(self.shader)
+            self.Guy2.draw(self.shader)
+            self.Guy.draw(self.shader)
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
             self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye)
+            
         elif self.perspective_view==2:
             self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
         else:
             self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
+            
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
+        
+        if self.perspective_view!=0:
+            self.Guy.draw(self.shader)
+            self.Guy2.draw(self.shader)
 
         for obj in self.objects:
             obj.draw(self.shader)
         for obj in self.mazeObjects:
             obj.draw(self.shader)
-        self.Guy2.draw(self.shader)
+       
         pygame.display.flip()
         
 
@@ -374,6 +432,8 @@ class GraphicsProgram3D:
 
                     if event.key == K_SPACE:
                         self.perspective_view = (self.perspective_view+1)%self.perspective_max 
+                    if event.key == K_m:
+                        self.map_on=(not self.map_on)
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 

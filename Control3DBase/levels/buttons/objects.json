@@ -70,14 +70,40 @@
     "buttons":{
         "reset":{
             "box-z":2,
-            "box-x":11,
+            "box-x":4,
             "box-y":0,
-            "placement?":"somewhere"
+            "placement?":"somewhere",
+            "action":{}
+        },
+        "button1":{
+            "box-z":8,
+            "box-x":9,
+            "box-y":0,
+            "placement?":"somewhere",
+            "action":{}
+        },
+        "button2":{
+            "box-z":11,
+            "box-x":9,
+            "box-y":0,
+            "placement?":"somewhere",
+            "action":{}
+        },
+        "button3":{
+            "box-z":11,
+            "box-x":2,
+            "box-y":0,
+            "placement?":"somewhere",
+            "action":{}
         }
-        
     },
     "smallWalls":{
-
+        "z-start":9.9,
+        "z-end":10.1,
+        "x-start":9,
+        "x-end":11,
+        "y-start":0,
+        "y-end":3
     }
 
 }

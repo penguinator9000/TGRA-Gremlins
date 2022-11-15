@@ -13,7 +13,7 @@
         },
         "2":{
             "location":{
-                "box-z":8,
+                "box-z":7,
                 "box-x":11,
                 "box-y":1,
                 "direction":[-1,0,0],
@@ -24,7 +24,7 @@
         },
         "3":{
             "location":{
-                "box-z":11,
+                "box-z":10,
                 "box-x":11,
                 "box-y":1,
                 "direction":[-1,0,0],
@@ -35,7 +35,7 @@
         },
         "5":{
             "location":{
-                "box-z":16,
+                "box-z":15,
                 "box-x":11,
                 "box-y":1,
                 "direction":[-1,0,0],
@@ -49,18 +49,18 @@
                 "box-z":10,
                 "box-x":6,
                 "box-y":2,
-                "direction":[-1,0,0],
+                "direction":[0,-1,0],
                 "up":[0,1,0]
             },
             "portal-connection":"",
             "view-matrix":""
         },
-        "":{
+        "7":{
             "location":{
-                "box-z":2,
-                "box-x":11,
-                "box-y":0,
-                "direction":[-1,0,0],
+                "box-z":10,
+                "box-x":0,
+                "box-y":1,
+                "direction":[1,0,0],
                 "up":[0,1,0]
             },
             "portal-connection":"",
@@ -69,7 +69,7 @@
     },
     "buttons":{
         "reset":{
-            "box-z":2,
+            "box-z":3,
             "box-x":4,
             "box-y":0,
             "placement":{"z-offset":0.5, "x-offset":0.5},
@@ -77,7 +77,7 @@
             "color":[[1,1,1]]
         },
         "button1":{
-            "box-z":8,
+            "box-z":7,
             "box-x":9,
             "box-y":0,
             "placement":{"z-offset":0.5, "x-offset":0.5},
@@ -85,7 +85,7 @@
             "color":[[1,1,1]]
         },
         "button2":{
-            "box-z":11,
+            "box-z":10,
             "box-x":9,
             "box-y":0,
             "placement":{"z-offset":0.5, "x-offset":0.5},
@@ -93,7 +93,7 @@
             "color":[[1,1,1]]
         },
         "button3":{
-            "box-z":11,
+            "box-z":10,
             "box-x":2,
             "box-y":0,
             "placement":{"z-offset":0.5, "x-offset":0.5},

@@ -258,7 +258,7 @@ class GraphicsProgram3D:
         
         if self.movement!=Vector(0,0,0):
             pass
-            #self.maze_collision(self.view_matrix.eye, self.movement)
+            self.maze_collision(self.view_matrix.eye, self.movement)
 
 
         self.GuyRotation=self.GuyRotation%(pi*2)
@@ -274,7 +274,7 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
         self.view_matrix_3P.eye=self.view_matrix.eye+(self.view_matrix.n*0.5)+(self.view_matrix.v*0.5)
-        #self.maze_collision(self.view_matrix_3P.eye, (self.view_matrix.n*0.5)+(self.view_matrix.v*0.5))
+        self.maze_collision(self.view_matrix_3P.eye, (self.view_matrix.n*0.5)+(self.view_matrix.v*0.5))
         self.view_matrix_3P.look(self.view_matrix.eye,Vector(0,1,0)+(self.view_matrix.n*(-0.01)))
 
 
@@ -284,7 +284,7 @@ class GraphicsProgram3D:
         self.light1.pos= Point( self.view_matrix.eye.x ,self.view_matrix.eye.y+2 ,self.view_matrix.eye.z)
 
         boiWentVec = self.BOI.move(delta_time)
-        collided = False#self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
+        collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
         #print(self.BOI.pos)
         if collided:
             self.BOI.moveTo(self.BOI.pos.x,self.BOI.pos.z)
@@ -302,12 +302,12 @@ class GraphicsProgram3D:
             self.view_matrix.eye.x = 3
             self.view_matrix.eye.z = 3
             pass
-        if self.query_maze(int(self.BOI.pos.x//2),int(self.BOI.pos.z//2)) == 0:
+        if self.ll.queryLevel(int(self.BOI.pos.x),int(self.BOI.pos.z)) == 0:
             self.BOI.randomstart(self)
-        if self.query_maze(int(self.view_matrix.eye.x//2),int(self.view_matrix.eye.z//2)) == 0:
+        if self.ll.queryLevel(int(self.view_matrix.eye.x),int(self.view_matrix.eye.z//2)) == 0:
             global WIN
             WIN=True
-            return True
+            #return True
         self.light2.pos= Point( self.BOI.pos.x,self.BOI.pos.y+0.5,self.BOI.pos.z)
 
         return False 
@@ -444,8 +444,8 @@ class GraphicsProgram3D:
     def maze_collision(self,pNow,vector, rad = 0):
         """The point is were you want to be vector is how you got there"""
         pWas = pNow+(vector*(-1))
-        X= int(pWas.x//2)
-        Z= int(pWas.z//2)
+        X= int(pWas.x)
+        Z= int(pWas.z)
         #leeway = 0.25
         if not rad:
             rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
@@ -454,16 +454,16 @@ class GraphicsProgram3D:
         elif vector.x>0: vx=1
         else: vx=0
         #XL = int((pWas.x+vx*leeway)//2)
-        XR = int((pWas.x+vx*rad)//2)
-        XV = int((pNow.x+vx*rad)//2)
+        XR = int((pWas.x+vx*rad))
+        XV = int((pNow.x+vx*rad))
         xtru = XR == XV or True
 
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
         #ZL = int((pWas.z+vz*leeway)//2)
-        ZR = int((pWas.z+vz*rad)//2)
-        ZV = int((pNow.z+vz*rad)//2)
+        ZR = int((pWas.z+vz*rad))
+        ZV = int((pNow.z+vz*rad))
         ztru = ZR == ZV or True
 
         #print("cam here ",pNow)
@@ -472,7 +472,7 @@ class GraphicsProgram3D:
         quacko = None
         didcolision=False
         if xtru:
-            q = self.query_maze(XV,Z)
+            q = self.ll.queryLevel(XV,Z)
             if q:
                 #print("Collision x at ",XV,Z,q)
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
@@ -484,7 +484,7 @@ class GraphicsProgram3D:
                 
                 
         if ztru:
-            q = self.query_maze(X,ZV)
+            q = self.ll.queryLevel(X,ZV)
             if q:
                 #print("Collision z at ", X, ZV,q)
                 #print("q.pos",q.pos,"pNow.z",pNow.z)
@@ -496,7 +496,7 @@ class GraphicsProgram3D:
                 
     
         if not didcolision:
-            q = self.query_maze(XV,ZV)
+            q = self.ll.queryLevel(XV,ZV)
             if q:
                 #print("Collision xz at ", XV, ZV,q)
                 vector.normalize()

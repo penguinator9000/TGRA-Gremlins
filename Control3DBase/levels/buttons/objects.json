@@ -72,29 +72,33 @@
             "box-z":2,
             "box-x":4,
             "box-y":0,
-            "placement?":"somewhere",
-            "action":{}
+            "placement":{"z-offset":0.5, "x-offset":0.5},
+            "action":[["1","2"],["3","4"]],
+            "color":[[1,1,1]]
         },
         "button1":{
             "box-z":8,
             "box-x":9,
             "box-y":0,
-            "placement?":"somewhere",
-            "action":{}
+            "placement":{"z-offset":0.5, "x-offset":0.5},
+            "action":[["1","2"],["3","4"]],
+            "color":[[1,1,1]]
         },
         "button2":{
             "box-z":11,
             "box-x":9,
             "box-y":0,
-            "placement?":"somewhere",
-            "action":{}
+            "placement":{"z-offset":0.5, "x-offset":0.5},
+            "action":[["1","2"],["3","4"]],
+            "color":[[1,1,1]]
         },
         "button3":{
             "box-z":11,
             "box-x":2,
             "box-y":0,
-            "placement?":"somewhere",
-            "action":{}
+            "placement":{"z-offset":0.5, "x-offset":0.5},
+            "action":[["1","2"],["3","4"]],
+            "color":[[1,1,1]]
         }
     },
     "smallWalls":{

@@ -538,7 +538,7 @@ class GraphicsProgram3D:
 
 if __name__ == "__main__":
     GraphicsProgram3D().start()
-    while WIN:
+    if WIN:
         amazing="""    _             _ _ _ 
      /\                                   (_)           | | | |
     /  \   _ __ ___   __ _  __ _  __ _ _____ _ __   __ _| | | |

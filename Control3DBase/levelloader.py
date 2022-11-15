@@ -12,6 +12,7 @@ class LevelLoader():
         self.xSize = 1
         self.ySize = 2
         self.zSize = 1
+        self.walls = []
     def validateLayouyt(self):
         count = 1
         if self.layout:
@@ -30,7 +31,7 @@ class LevelLoader():
     def load(self,levelDir):
         if self.levelDir == levelDir:
             return "already loaded"
-        
+        cube = Cube()
         self.levelDir = levelDir
         print(levelDir+"/layout.csv")
         with open(self.root+"/"+levelDir+"/layout.csv",'r') as layoutFile:
@@ -56,18 +57,25 @@ class LevelLoader():
                     for i in  row:
                         for j in range(int(i)):
                             toAppend = None
-                            if wall: toAppend = GraphicalObject(cube,pos = (xcount*self.xSize + self.xSize/2,ycount*self.ySize + ySize/2,zcount*self.ySize+self.ySize/2))
-                            self.layout[ycount][zcount].append(wall) #exchange this for object at some point.
+                            print(ycount*self.ySize + self.ySize/2)
+                            if wall: toAppend = GraphicalObject(cube,pos = (xcount*self.xSize + self.xSize/2,(ycount-1)*self.ySize + self.ySize/2,zcount*self.zSize+self.zSize/2), size =(self.xSize,self.ySize,self.zSize))
+                            self.layout[ycount][zcount].append(toAppend) #exchange this for object at some point.
+                            if toAppend:self.walls.append(toAppend)
                             xcount +=1
                         wall = not wall
                     zcount += 1
+        valid, msg = self.validateLayouyt()
+        print(msg)
+        if(not valid): return False
         with open(self.root+"/"+levelDir+"/objects.json",'r') as objects:
             self.objects = json.load(objects)
         return [self.layout, self.objects]
-    def draw (self):
+    def draw (self,shader):
         """
             Draws the entire level with all objects 
         """
+        for i in self.walls:
+            i.draw(shader)
         pass
     def pDraw( self, portalId):
         """
@@ -110,6 +118,7 @@ class smallWall:
 
 
 if __name__ == "__main__":
-    ll = LevelLoader(sys.path[0])
+    ll = LevelLoader(sys.path[0]+"/levels")
     ll.load("buttons")
     print(ll.validateLayouyt())
+    print(ll.layout)

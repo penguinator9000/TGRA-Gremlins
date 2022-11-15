@@ -9,6 +9,8 @@ from math import *
 
 from Matrices import *
 
+def lerp(a,b,t):
+    return (1-t)*a+t*b
 
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =Color(0.6,0.6,0.6) ):
@@ -104,3 +106,87 @@ class BOI(GraphicalObject):
         #vec = a
         self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
         self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
+
+class Button:
+    def cordCalcs(self,corner,size,offset):
+        start = corner*size+self.buttonSize
+        end =  corner*size+size-self.buttonSize
+        return lerp(start,end,offset)
+        pass
+    def __init__(self,id, button_dict,xSize,ySize,zSize,buttonsize = 0.1):
+        self.buttonSize = buttonsize
+        self.id = id
+        self.height = 0.433
+        self.xpos = self.cordCalcs(button_dict["box-x"],xSize,button_dict['placement']["x-offset"])
+        self.ypos = button_dict["box-y"]*ySize+self.height/2
+        self.zpos = self.cordCalcs(button_dict["box-z"],zSize,button_dict['placement']["z-offset"])
+        self.actions = button_dict['action']
+        self.colors = button_dict['color']
+        self.pillar = GraphicalObject(Cube(),size = (buttonsize,self.height,buttonsize),pos=(self.xpos,self.ypos,self.zpos),color=(0.5,0.2,0.5))
+        self.button = GraphicalObject(Cube(),size=(buttonsize*0.7,0.045,buttonsize*0.7),pos=(self.xpos,self.ypos+self.height/2,self.zpos),color=(0.1,0.6,0.6),rotation=(0,45,0) )
+        #print(button_dict["box-x"],button_dict["box-y"],button_dict["box-z"])
+        #print(self.xpos,self.ypos,self.zpos)
+
+    def press(self):
+        pass
+    def nullState(self):
+        pass
+    def draw(self,shader):
+        self.pillar.draw(shader)
+        self.button.draw(shader)
+class Portal:
+    def __init__(self,id, portalDict,xSize,ySize,zSize):
+        r =1.57079633
+        offset = 0.01
+        self.active = False
+        self.id = id
+        self.direction = portalDict["location"]["direction"]
+        xd,yd,zd = self.direction
+        self.up = portalDict['location']['up']
+        x = portalDict["location"]["box-x"]
+        y = portalDict["location"]["box-y"]
+        z = portalDict["location"]["box-z"]
+        self.xpos = x*xSize+xSize/2 + xd*(xSize+offset)/2
+        self.ypos = (y-1)*ySize+ySize/2+ yd*(ySize+offset)/2
+        self.zpos = z*zSize+zSize/2 + zd*(zSize+offset)/2
+        print(self.xpos,self.ypos,self.zpos)
+        rot = (r*xd,0,r)
+        if yd != 0: rot = (2*r,0,0)
+        self.portal = GraphicalObject(Plane(),size=(xSize,ySize,zSize),pos=(self.xpos,self.ypos,self.zpos),color=(0,0,1), rotation=rot)    
+
+    def draw(self,shader):
+        if self.active:
+            self.portal.draw(shader)
+    def setColor(self,color):
+        self.portal.color = color
+
+class SmallWall:
+    def __init__(self,id, smallWallDict,xSize,ySize,zSize):
+        pass
+    def draw(self,shader):
+        pass
+
+class PortalLink:
+    def __init__(self, ll):
+        self.ll = ll
+        self.p1 = None
+        self.p2 = None
+        self.buttonID = None
+    def update(self,buttonId,p1_Id, p2_Id):
+        if self.buttonID:
+            if self.buttonID != buttonId:
+                self.ll.buttons[self.buttonID].nullState()
+        if self.p1 or self.p2:
+            self.clear()
+        self.buttonID = buttonId
+        self.p1 = self.ll.portals[p1_Id]
+        self.p1.active = True
+        self.p2 = self.ll.portals[p2_Id]
+        self.p2.active = True
+        
+        
+    def clear(self):
+        self.p1.active = False
+        self.p2.active = False
+        self.p1 = None
+        self.p2 = None

@@ -96,8 +96,7 @@ class BOI(GraphicalObject):
     def randomstart(self,qman):
         x = randint(3,31)
         z = randint(3,31)
-        if qman.query_maze(int(x//2),int(z//2)):
-            return self.moveTo(x,z)
+        return self.moveTo(x,z)
         self.randomstart(qman)
     def reflect(self,mirVec):
         perpMirVec = Vector(-mirVec.z,0,mirVec.x)

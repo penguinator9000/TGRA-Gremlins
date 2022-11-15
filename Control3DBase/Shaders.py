@@ -38,7 +38,7 @@ class Shader3D:
         self.normalLoc			    = glGetAttribLocation(self.renderingProgramID, "a_normal")
         glEnableVertexAttribArray(self.normalLoc)
 
-        self.uvLoc			    = glGetAttribLocation(self.renderingProgramID, "a_uv")
+        self.uvLoc			        = glGetAttribLocation(self.renderingProgramID, "a_uv")
         glEnableVertexAttribArray(self.uvLoc)
 
         self.modelMatrixLoc			= glGetUniformLocation(self.renderingProgramID, "u_model_matrix")

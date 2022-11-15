@@ -75,9 +75,17 @@ class Color:
         return self.rgb[i]
     
     def __mul__(self, other):
-        return Color(self.r * other.r, self.g * other.g, self.b * other.b,self.a*other.a)
+        return Color(self.r * other.r, self.g * other.g, self.b * other.b, self.a * other.a)
+    
+    def __add__(self, other):
+        return Color(self.r + other.r, self.g + other.g, self.b + other.b, self.a + other.a)
+
     def __str__(self):
         return"RGBA - "+str(self.r)+", "+str(self.g)+", "+str(self.b)+", "+str(self.a)
+    
+    def intensity(self,scalar):
+        return Color(self.r * scalar, self.g * scalar, self.b * scalar, self.a * scalar)
+
         
 class Cube:
     def __init__(self):
@@ -291,7 +299,7 @@ class BayesianCurve4P:
         return self.__getitem__(t)
 
 class LoopBayesianCurves4P:
-    def __init__(self,Curve1,repetitions=2):
+    def __init__(self,Curve1=BayesianCurve4P(Point(1,1,1),Point(1,1,1),Point(1,1,1),Point(1,1,1)),repetitions=2,d=1):
         self.Curvelist=[Curve1]
         self.ControlePoints=[Curve1.p1,Curve1.p1p2vec,Curve1.p4,Curve1.p3p4vec]
         repetitions+=repetitions%2
@@ -302,14 +310,21 @@ class LoopBayesianCurves4P:
             C = BayesianCurve4P(p4,v3,v2,p1)
             self.Curvelist.append(C)
             self.ControlePoints+=[p1,v2]
+        self.duration=d
+
     def __getitem__(self,t):
         t=t%self.length
         i=int(t//1)
         it=t%1
-        return self.Curvelist[i][it]   
+        return self.Curvelist[i][it]
+    
+    def getPoint(self,f):
+        """frame of duration"""
+        t=(f/self.duration)*self.length
+        return self.__getitem__(t)
 
     def BuildFromControle(self,ControlePoints=[]):
-        if ControlePoints == []: ControlePoints=self.ControlePoints
+        if ControlePoints != []: self.ControlePoints=ControlePoints
         for i in range(self.length):
             p1, v2, p4, v3 = self.ControlePoints[i*2:i*2+4]
             if i == self.length-1:
@@ -337,30 +352,27 @@ class Mesh:
         self.shiny = 1
         
         self.model_matrix=[ 1, 0, 0, 0,
-                                  0, 1, 0, 0,
-                                  0, 0, 1, 0,
-                                  0, 0, 0, 1 ]
+                            0, 1, 0, 0,
+                            0, 0, 1, 0,
+                            0, 0, 0, 1 ]
         self.texture=None
         self.spectexture=None
+        self.LastDrawInfo=[None]*7
     
     def draw(self,shader):
         n,m=self.nm
         v=Vector(0,0,0)
         shader.set_model_matrix(self.model_matrix)
-        r,g,b = self.color
-        rd,gd,bd = self.diffuse
-        ra,ga,ba = self.ambiance
-        rs,gs,bs = self.specular
-        shader.set_material_diffuse(r*rd,g*gd,b*bd)
-        shader.set_material_specular(r*rs,g*gs,b*bs, self.shiny)
-        shader.set_material_ambient(r*ra,g*ga,b*ba)
+        
         
         position_array=[]
         normal_array=[]
+        uv_array = []
+        color_array=[]
         triangle_uv_array = [1.0, 0.5,
                              0.0, 1.0,
                              0.0, 0.0]
-
+        many=0
         if self.texture != None:
             glActiveTexture(GL_TEXTURE1)
             glBindTexture(GL_TEXTURE_2D,self.texture)
@@ -374,7 +386,13 @@ class Mesh:
         else:
             shader.set_material_specular_texture(0)
 
-        if n>1 and m>1:
+        if  self.LastDrawInfo[:3] == [self.PointMatrix,self.DrawingMode,self.ColorMatrix]:
+            position_array=self.LastDrawInfo[3]
+            normal_array=self.LastDrawInfo[4]
+            uv_array = self.LastDrawInfo[5]
+            many= self.LastDrawInfo[6]
+            color_array= self.LastDrawInfo[7]
+        elif n>1 and m>1:
             for ni in range(n-1):
                 for mi in range(m-1):
                     if self.DrawingMode["vertex"] == "1":
@@ -382,6 +400,10 @@ class Mesh:
                         p2 = v+(self.PointMatrix[ni+1][mi])
                         p3 = v+(self.PointMatrix[ni][mi+1])
                         p4 = v+(self.PointMatrix[ni+1][mi+1])
+                        c1 = (self.ColorMatrix[ni][mi])
+                        c2 = (self.ColorMatrix[ni+1][mi])
+                        c3 = (self.ColorMatrix[ni][mi+1])
+                        c4 = (self.ColorMatrix[ni+1][mi+1])
                         if self.DrawingMode["texture"]=="squere":
                             squere_uv_array=[0,0,
                                              1,0,
@@ -397,6 +419,10 @@ class Mesh:
                         p2 = v+(self.PointMatrix[ni][mi])
                         p3 = v+(self.PointMatrix[ni+1][mi+1])
                         p4 = v+(self.PointMatrix[ni][mi+1])
+                        c1 = (self.ColorMatrix[ni+1][mi])
+                        c2 = (self.ColorMatrix[ni][mi])
+                        c3 = (self.ColorMatrix[ni+1][mi+1])
+                        c4 = (self.ColorMatrix[ni][mi+1])
                         if self.DrawingMode["texture"]=="squere":
                             squere_uv_array=[1,0,
                                              0,0,
@@ -422,9 +448,9 @@ class Mesh:
                     # shader.set_normal_attribute(normal_array)
                     # glDrawArrays(GL_TRIANGLE_FAN, 0, 3)
 
-                    for l in [[p1,p2,p3],[p2,p3,p4]]:
-                        l1,l2,l3=l
-                        position_array=l1.list()+l2.list()+l3.list()
+                    for l in [[p1,p2,p3,c1,c2,c3],[p2,p3,p4,c2,c3,c4]]:
+                        l1,l2,l3,k1,k2,k3=l
+                        position_array+=l1.list()+l2.list()+l3.list()
                         v1=l1-l3
                         v2=l2-l3
                         facingv=l1-self.pos+l2-self.pos+l3-self.pos
@@ -433,25 +459,129 @@ class Mesh:
                         nv.normalize()
                         facingv.normalize()
                         sign=facingv.dot(nv)
-                        if sign<0:nv=nv*(-1)
+                        #print(sign)
+                        #if sign>0:nv=nv*(-1)
                         # print("lol") 
                         # if 1+nv.y>0:
                         #     nv*(-1)
                         #     print("woop")
-                        normal_array=nv.list()*3
-                        shader.set_position_attribute(position_array)
-                        shader.set_normal_attribute(normal_array)
+                        
+                        color_array.append(k1.intensity(1/3)+k2.intensity(1/3)+k3.intensity(1/3))
                         if self.DrawingMode["texture"]=="triangle":
-                            shader.set_uv_attribute(triangle_uv_array)
+                            #shader.set_uv_attribute(triangle_uv_array)
+                            uv_array +=triangle_uv_array
+                            if sign<=0:nv=nv*(-1)#def wrong
                         elif self.DrawingMode["texture"]=="squere" or self.DrawingMode["texture"]=="All":
                             if l3==p3:
-                                shader.set_uv_attribute(squere_uv_array[:-1])
+                                #shader.set_uv_attribute(squere_uv_array[:-1])
+                                uv_array +=squere_uv_array[:-1]
+                                
                             else:
-                                shader.set_uv_attribute(squere_uv_array[1:])
-                            
-                        glDrawArrays(GL_TRIANGLE_FAN, 0, 3)
+                                #shader.set_uv_attribute(squere_uv_array[1:])
+                                uv_array +=squere_uv_array[1:]
+                                nv=nv*(-1)
+                        else:
+                            if sign>0:nv=nv*(-1)#def wrong
+
+                        normal_array+=nv.list()*3
+                        many+=1    
+                        
+        shader.set_position_attribute(position_array)
+        shader.set_normal_attribute(normal_array)
+        shader.set_uv_attribute(uv_array)
+        for i in range(many):
+            C=color_array[i]
+            rd,gd,bd = self.diffuse*C
+            ra,ga,ba = self.ambiance*C
+            rs,gs,bs = self.specular*C
+            shader.set_material_diffuse(rd,gd,bd)
+            shader.set_material_specular(rs,gs,bs, self.shiny)
+            shader.set_material_ambient(ra,ga,ba)
+            glDrawArrays(GL_TRIANGLE_FAN, i*3, 3)
+        self.LastDrawInfo=[self.PointMatrix.copy(),self.DrawingMode.copy(),self.ColorMatrix.copy(),position_array,normal_array,uv_array,many]
+
+
+class Lava():
+    def __init__(self,Wave,N,M,p1,p2,botColor,topColor,xWaveScale,yWaveScale,zWaveScale,animationSpeed=1,yWaveRange=None,texture=None,spectexture=None):
+        if Wave == None:
+            Wave=LoopBayesianCurves4P()
+        self.Wave=Wave
+        self.nm=(N,M)
+        self.animationSpeed=animationSpeed
+        v=Vector(0,0,0)
+        x1,y1,z1 = (v+p1).list()
+        x2,y2,z2 = (v+p2).list()
+        self.Xrange=(x1,x2)
+        self.Yrange=(y1,y2)
+        self.Zrange=(z1,z2)
+        self.mesh=Mesh(N,M,Point((x1+x2)/2,(y1+y2)/2-10000000,(z1+z2)/2),topColor,texture="triangle")
+        self.mesh.texture=texture
+        self.mesh.spectexture=spectexture
+        self.timeElapsed = 0
+        if yWaveRange==None:
+            yWaveMin=self.Wave.ControlePoints[0].y
+            yWaveMax=self.Wave.ControlePoints[0].y
+            temp=self.Wave.ControlePoints[0].y
+            for i in range(len(self.Wave.ControlePoints)):
+                P=self.Wave.ControlePoints[i].y
+                if i%2:
+                    temp=self.Wave.ControlePoints[i].y
+                    if P>yWaveMax:
+                        yWaveMax=P
+                    elif P<yWaveMin:
+                        yWaveMin=P
+                else:
+                    P1=temp+self.Wave.ControlePoints[i].y
+                    if P1>yWaveMax:
+                        yWaveMax=P1
+                    elif P<yWaveMin:
+                        yWaveMin=P1
+                    P2=temp-self.Wave.ControlePoints[i].y
+                    if P1>yWaveMax:
+                        yWaveMax=P2
+                    elif P<yWaveMin:
+                        yWaveMin=P2
+            self.yWaveRange=(yWaveMin,yWaveMax)
+        else:
+            self.yWaveRange=yWaveRange
+
+        self.WaveScale=Vector(xWaveScale,yWaveScale,zWaveScale)
+        self.Colors=(botColor,topColor)
+        self.update(0)
+
+    def update(self,dtime):
+        self.timeElapsed +=dtime/1000
         
+        N,M = self.nm
+        xMin,xMax=self.Xrange
+        yMin,yMax=self.Yrange
+        zMin,zMax=self.Zrange
+        yPs=[]
+        def X(m):return xMin + m*(xMax-xMin)/M
+        def Y(n,m):
+            time=self.timeElapsed*self.animationSpeed
+            xW=self.Wave[(n+time)/self.WaveScale.x].x
+            zW=self.Wave[(n+time)/self.WaveScale.z].z
+            yW=self.Wave[(m+time)/self.WaveScale.y+xW+zW].y
+            yWaveMin,yWaveMax =self.yWaveRange
+            yP = ( (yW-yWaveMin)/(yWaveMax-yWaveMin) )
+            yPs.append(yP)
+            y = yMin +yP *(yMax-yMin)
+            return y 
+        def Z(n):return zMin + n*(zMax-zMin)/N
+        self.mesh.PointMatrix=[ [ Point(X(n),Y(n,m),Z(m)) for m in range(M) ] for n in range(N)]
+        botColor,topColor=self.Colors
+        self.mesh.ColorMatrix=[[ (botColor.intensity(1-yPs[m+n*M]))+(topColor.intensity(yPs[m+n*M])) for m in range(M) ] for n in range(N)]
     
+    def draw(self,shader):
+        self.mesh.draw(shader)
+
+
+
+
+if __name__ == "__main__":
+    from Control3DProgram import *
+    GraphicsProgram3D().start() 
                     
                         
         

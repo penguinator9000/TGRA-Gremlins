@@ -1,11 +1,8 @@
-
 # from OpenGL.GL import *
 # from OpenGL.GLU import *
-from ctypes import pointer
+
 from math import *
-from msilib.schema import Class
-from shutil import move
-from turtle import Screen, color, pos, position
+
 import random
 
 import pygame
@@ -167,14 +164,6 @@ def get_texture(name):
 
 class GraphicsProgram3D:
     def __init__(self):
-        B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
-        
-        L=LoopBayesianCurves4P(B,8)
-        L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
-        L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
-        L.ControlePoints[9]=L.ControlePoints[9]*(8)
-        
-        L.BuildFromControle()
 
         pygame.init() 
         pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)
@@ -189,7 +178,7 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
+        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 100, ambiance=Color(0.2,0.2,0.2))
         self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0.8,0.8),reach = 10)
         #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
@@ -224,6 +213,7 @@ class GraphicsProgram3D:
         c = Cube()
         self.maze=[[None for i in range(MAZE_Max+1)] for ii in range(MAZE_Max+1)]
         self.mazeObjects =[]
+        y_offset= -3
         with open(sys.path[0] + "/maze.csv", 'r') as file:
             csvreader = csv.reader(file)
             first = True
@@ -231,7 +221,7 @@ class GraphicsProgram3D:
                 if first: first = False
                 else:
                     x,z = [(int(val)) for val in row]
-                    box = GraphicalObject(c,pos=(x*2+MAZE_ofset,1,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
+                    box = GraphicalObject(c,pos=(x*2+MAZE_ofset,1+y_offset,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
                     box.texture = tile_tex
                     box.spectexture=rand_spec_tex
                     self.mazeObjects.append(box)
@@ -243,9 +233,7 @@ class GraphicsProgram3D:
         self.GuyBop = 0
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(0.75,0.75,0.75),(0,0.25,0),(0,0,0),Color(0.5,0,1)]
-        p= GraphicalObject(Plane(),color=Color(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
-        p.ambiance=Color(1,1,1)
-        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
+        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5))]
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
@@ -253,11 +241,23 @@ class GraphicsProgram3D:
         self.BOI.randomstart(self)
         self.objects.append(self.BOI)
 
-        meshTest=Mesh(4,120,Point(3,-100,3),Color(1,0,0),"1","triangle")
-        meshTest.PointMatrix=[[Point(m/1.25+3,L[m/2+n/2].y/1.25-1.75, n/2+2) for m in range(120) ] for n in [1,2,3,4]]
-        meshTest.texture=tile_tex
+        lava_tex1 = get_texture("lava-texture1.jpg")
+        lava_tex2 = get_texture("lava-texture2.jpg")
+
+        B=BayesianCurve4P(p1 = Point(0, 0, 1), p2 = Point(0, 1, 0), p3 = Point(1, 1, 1), p4 = Point(1, 0, 0))
         
-        self.objects.append(meshTest)
+        L=LoopBayesianCurves4P(B,8)
+        
+        L.BuildFromControle()
+        self.lavaTest=Lava(L,15,15,Point(0,-4,0),Point(30,-1,30),Color(1,0,0),Color(0.5,0.5,0),5,5,30,273.272,texture=lava_tex1,spectexture=lava_tex2)
+        # lava_y_offsett=-3.75
+
+        # lavaTest=Mesh(30,30,Point(15,-9000,15),Color(1,0,0),"1","triangle")
+        # N,M = lavaTest.nm
+        # lavaTest.PointMatrix=[[Point(m,L[m/3+n/2].y/1.25+lava_y_offsett, n) for m in range(M) ] for n in range(N)]
+        # lavaTest.texture=tile_tex
+        
+        self.objects.append(self.lavaTest)
 
         '''
         for i in range(20):
@@ -365,6 +365,8 @@ class GraphicsProgram3D:
             WIN=True
             return True
         self.light2.pos= Point( self.BOI.pos.x,self.BOI.pos.y+0.5,self.BOI.pos.z)
+
+        self.lavaTest.update(delta_time)
 
         return False 
         
@@ -503,6 +505,7 @@ class GraphicsProgram3D:
             return 0
     
     def maze_collision(self,pNow,vector, rad = 0):
+        return None
         """The point is were you want to be vector is how you got there"""
         pWas = pNow+(vector*(-1))
         X= int(pWas.x//2)
@@ -593,7 +596,7 @@ class GraphicsProgram3D:
 
 if __name__ == "__main__":
     GraphicsProgram3D().start()
-    while WIN:
+    if WIN:
         amazing="""    _             _ _ _ 
      /\                                   (_)           | | | |
     /  \   _ __ ___   __ _  __ _  __ _ _____ _ __   __ _| | | |

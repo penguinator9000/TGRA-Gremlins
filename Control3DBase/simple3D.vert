@@ -1,9 +1,11 @@
 attribute vec4 a_position;
 attribute vec4 a_normal;
+attribute vec2 a_uv;
 
 uniform mat4 u_model_matrix;
 uniform mat4 u_view_matrix;
 uniform mat4 u_projection_matrix;
+
 
 
 
@@ -27,6 +29,7 @@ uniform float u_light_count_vert;
 varying vec4 v_normal[10];
 varying vec4 v_s [10];
 varying vec4 v_h[10];
+varying vec2 v_uv;
 
 void main(void)
 {
@@ -37,6 +40,10 @@ void main(void)
 	vec4 s_arr[10];  
 	vec4 h_arr[10];
 	position = u_model_matrix * position;
+	
+	//UV coords
+	v_uv = a_uv;
+	
 	for(int i=0 ; i<u_light_count_vert;i++){
 		
 		normal_arr[i] = u_model_matrix * normal;

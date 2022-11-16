@@ -26,20 +26,25 @@ MAZE_ofset=1
 import csv
 global WIN
 WIN=False
+def get_texture(name):
+    surface = pygame.image.load(sys.path[0]+"/"+name)
+    tex_string= pygame.image.tostring(surface,"RGBA",1)
+    width=surface.get_width()
+    height=surface.get_height()
+    tex_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D,tex_id)
+    glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR)
+    glTexParameter(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR)
+    glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameter(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
 
+
+    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
+    return tex_id
 
 
 class GraphicsProgram3D:
     def __init__(self):
-        # B=BayesianCurve4P(p1 = Point(15, 2.75, 2), p2 = Point(10, 2.5, 2), p3 = Point(5, 2, 2), p4 = Point(0, 2.3, 2))
-        
-        # L=LoopBayesianCurves4P(B,4)
-        # L.ControlePoints[0]=L.ControlePoints[0]*(0.125)
-        # L.ControlePoints[1]=L.ControlePoints[1]*(0.125)
-        # L.ControlePoints[9]=L.ControlePoints[9]*(8)
-        
-        # L.BuildFromControle()
-
         pygame.init() 
         pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)
 
@@ -47,18 +52,13 @@ class GraphicsProgram3D:
         self.shader.use()
         self.shader.set_global_ambiance(0.4,0.4,0.4)
 
-        # self.model_matrix = ModelMatrix()
-        # self.model_matrix.load_identity()
-        # self.model_matrix.push_matrix()
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
         self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
         self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
-        #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
         
         self.view_matrix = ViewMatrix()
-        #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
         self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
         self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
@@ -75,11 +75,23 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
 
+        self.nullTexture = get_texture("white.png")
+        
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,self.nullTexture)
+        
+        tile_tex=get_texture("A2x2tileWhiteMarble.jpg")
+        rand_spec_tex=get_texture("A-Java-G.png")
+
+
         c = Cube()
         self.ll = LevelLoader(sys.path[0]+"/levels")
-        self.ll.load("buttons")
+        self.ll.load("buttons",tile_tex,rand_spec_tex)
         self.portalLink = PortalLink(self.ll)
         self.portalLink.update("reset","1","2")
+
+
+
 
 
         self.Guy= GraphicalObject(D8(),color=Color(0,0.5,1))
@@ -88,25 +100,18 @@ class GraphicsProgram3D:
         self.GuyBop = 0
         self.Guy2= self.Guy.copy()
         self.Guy2update=[(0.75,0.75,0.75),(0,0.25,0),(0,0,0),Color(0.5,0,1)]
-        p= GraphicalObject(Plane(),color=Color(0,1,0.5),pos=(0,-0.51,0),size=(1000,1,1000))
-        p.ambiance=Color(1,1,1)
-        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5)),p]
+        self.objects = [GraphicalObject(c,pos=(0,0,3)),GraphicalObject(c,color =Color(1,0,1),pos=(2,0,-1),size=(0.5,0.5,0.5))]
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
         self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
         #self.BOI.randomstart(self)
         self.objects.append(self.BOI)
-        #meshTest=Mesh(2,60,Point(3,-100,3),Color(1,0,0),"2")
-        #meshTest.PointMatrix=[[Point(m/10+3,L[m/10+n/3].y-2.5, n+2) for m in range(60) ] for n in [1,2]]
 
-        
-        #self.objects.append(meshTest)
+        lava_tex1 = get_texture("lava-texture1.jpg")
+        lava_tex2 = get_texture("lava-texture2.jpg")
+        self.ll.createLava(lava_tex1,lava_tex2)
 
-        '''
-        for i in range(20):
-            self.objects.append(GraphicalObject(c,pos=(i-(i%2),0,i-((i+1)%2)),size=(1,3,1)))
-        '''
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
@@ -208,6 +213,9 @@ class GraphicsProgram3D:
             #return True
         self.light2.pos= Point( self.BOI.pos.x,self.BOI.pos.y+0.5,self.BOI.pos.z)
 
+
+        self.ll.lava.update(delta_time)
+
         return False 
         
         
@@ -250,8 +258,6 @@ class GraphicsProgram3D:
         for obj in self.objects:
             obj.draw(self.shader)
         self.ll.draw(self.shader)
-        #for obj in self.mazeObjects:
-        #    obj.draw(self.shader)
        
         pygame.display.flip()
         

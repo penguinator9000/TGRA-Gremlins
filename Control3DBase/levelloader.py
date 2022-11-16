@@ -15,6 +15,7 @@ class LevelLoader():
         self.ySize = 2
         self.zSize = 1
         self.walls = []
+        self.lava = None
     def validateLayouyt(self):
         count = 1
         if self.layout:
@@ -30,7 +31,7 @@ class LevelLoader():
                         return False, "unexpected x values expected "+ str(self.xMax)+ " got "+str(len(j))+" at line "+str(count)
             return True, "Layout valid" 
         else: return False, "No layout"
-    def load(self,levelDir):
+    def load(self,levelDir,wallTexture = None ,specWallTexture = None):
         if self.levelDir == levelDir:
             return "already loaded"
         cube = Cube()
@@ -62,7 +63,10 @@ class LevelLoader():
                             #print(ycount*self.ySize + self.ySize/2)
                             if wall: toAppend = GraphicalObject(cube,pos = (xcount*self.xSize + self.xSize/2,(ycount-1)*self.ySize + self.ySize/2,zcount*self.zSize+self.zSize/2), size =(self.xSize,self.ySize,self.zSize))
                             self.layout[ycount][zcount].append(toAppend) #exchange this for object at some point.
-                            if toAppend:self.walls.append(toAppend)
+                            if toAppend:
+                                self.walls.append(toAppend)
+                                toAppend.texture = wallTexture
+                                toAppend.spectexture = specWallTexture
                             xcount +=1
                         wall = not wall
                     zcount += 1
@@ -120,6 +124,7 @@ class LevelLoader():
             i.draw(shader)
         for obj in self.objectList:
             obj.draw(shader)
+        if self.lava: self.lava.draw(shader)
         
     def pDraw( self, portalId):
         """
@@ -147,7 +152,15 @@ class LevelLoader():
         """
         try: return self.objectLevelreference[(x,y,z)]
         except: return None
-    
+    def queryPortal(self):
+        pass
+    def createLava(self,lava_tex1,lava_tex2):
+        B=BayesianCurve4P(p1 = Point(0, 0, 1), p2 = Point(0, 1, 0), p3 = Point(1, 1, 1), p4 = Point(1, 0, 0))
+        
+        L=LoopBayesianCurves4P(B,8)
+        
+        L.BuildFromControle()
+        self.lava=Lava(L,15,15,Point(0,-2,0),Point(self.xMax,0,self.zMax),Color(1,0,0),Color(0.5,0.5,0),5,5,30,273.272,texture=lava_tex1,spectexture=lava_tex2)
     def changeRoot(self,location):
         self.root = location
         #maybe clear data later. also function might be useless

@@ -28,8 +28,24 @@ class GraphicalObject:
         self.ambiance = Color(0.5,0.5,0.5)
         self.specular = Color(0.5,0.5,0.5)
         self.shiny = 1
+        self.texture=None
+        self.spectexture=None
 
     def draw(self, shader):
+        if self.texture != None:
+            glActiveTexture(GL_TEXTURE1)
+            glBindTexture(GL_TEXTURE_2D,self.texture)
+            shader.set_material_texture(1)
+        else:
+            shader.set_material_texture(0)
+        if self.spectexture != None:
+            glActiveTexture(GL_TEXTURE2)
+            glBindTexture(GL_TEXTURE_2D,self.spectexture)
+            shader.set_material_specular_texture(2)
+        else:
+            shader.set_material_specular_texture(0)
+        
+            
         r,g,b = self.color
         rd,gd,bd = self.diffuse
         ra,ga,ba = self.ambiance
@@ -60,7 +76,19 @@ class GraphicalObject:
         cpy.diffuse = self.diffuse
         cpy.specular = self.specular
         cpy.shiny = self.shiny
-        return cpy        
+        return cpy
+
+
+# class GOPortals:#nvm
+#     def __init__(self):
+#         self.yRotation=0
+#         self.view_matrix=ViewMatrix()
+#         self.projection_matrix=ProjectionMatrix()
+#         self.pos=Point(0,0,0)
+#     def set_view_matrix(self,playerVM):
+#         self.view_matrix.eye = playerVM.eye-self.pos
+        
+          
 
 class BOI(GraphicalObject):
     boingPlaces = Vector(1,0,1)
@@ -96,6 +124,7 @@ class BOI(GraphicalObject):
     def randomstart(self,qman):
         x = randint(3,31)
         z = randint(3,31)
+        #if qman.query_maze(int(x//2),int(z//2)):
         return self.moveTo(x,z)
         self.randomstart(qman)
     def reflect(self,mirVec):
@@ -105,6 +134,7 @@ class BOI(GraphicalObject):
         #vec = a
         self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
         self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
+
 
 class Button:
     def cordCalcs(self,corner,size,offset):

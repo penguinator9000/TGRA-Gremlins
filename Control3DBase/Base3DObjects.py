@@ -498,7 +498,7 @@ class Mesh:
             shader.set_material_specular(rs,gs,bs, self.shiny)
             shader.set_material_ambient(ra,ga,ba)
             glDrawArrays(GL_TRIANGLE_FAN, i*3, 3)
-        self.LastDrawInfo=[self.PointMatrix.copy(),self.DrawingMode.copy(),self.ColorMatrix.copy(),position_array,normal_array,uv_array,many]
+        self.LastDrawInfo=[self.PointMatrix.copy(),self.DrawingMode.copy(),self.ColorMatrix.copy(),position_array,normal_array,uv_array,many,color_array]
 
 
 class Lava():

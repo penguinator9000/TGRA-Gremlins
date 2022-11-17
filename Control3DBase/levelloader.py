@@ -65,6 +65,7 @@ class LevelLoader():
                             self.layout[ycount][zcount].append(toAppend) #exchange this for object at some point.
                             if toAppend:
                                 self.walls.append(toAppend)
+                                toAppend.portal = None
                                 toAppend.texture = wallTexture
                                 toAppend.spectexture = specWallTexture
                             xcount +=1
@@ -94,8 +95,9 @@ class LevelLoader():
             tmp = Portal(id,dict,self.xSize,self.ySize,self.zSize)
             self.objectList.append(tmp)
             self.portals[id] = tmp
-            
-            locationRef = (dict["location"]["box-x"],dict["location"]["box-y"],dict["location"]["box-z"])
+            x,y,z = dict["location"]["box-x"],dict["location"]["box-y"],dict["location"]["box-z"]
+            locationRef = (x,y,z)
+            self.layout[y][z][x].portal = tmp
             if locationRef not in self.objectLevelreference:
                 self.objectLevelreference[locationRef] = [tmp]
             else: 
@@ -152,15 +154,22 @@ class LevelLoader():
         """
         try: return self.objectLevelreference[(x,y,z)]
         except: return None
-    def queryPortal(self):
-        pass
+    def queryPortal(self,x,z,y = 1):
+        x = x//self.xSize
+        z = z//self.zSize
+        y = (y+2)//self.ySize
+        if x >= self.xMax or x < 0: return 0
+        if z >= self.zMax or z < 0: return 0 
+        if self.layout[y][z][x]:
+            return self.layout[y][z][x].portal
+        return None
     def createLava(self,lava_tex1,lava_tex2):
         B=BayesianCurve4P(p1 = Point(0, 0, 1), p2 = Point(0, 1, 0), p3 = Point(1, 1, 1), p4 = Point(1, 0, 0))
         
         L=LoopBayesianCurves4P(B,8)
         
         L.BuildFromControle()
-        self.lava=Lava(L,15,15,Point(0,-2,0),Point(self.xMax,0,self.zMax),Color(1,0,0),Color(0.5,0.5,0),5,5,30,273.272,texture=lava_tex1,spectexture=lava_tex2)
+        self.lava=Lava(L,10,10,Point(0,-2,0),Point(self.xMax,-1.5,self.zMax),Color(1,0,0),Color(0.5,0.5,0),5,5,30,273.272,texture=lava_tex1,spectexture=lava_tex2)
     def changeRoot(self,location):
         self.root = location
         #maybe clear data later. also function might be useless

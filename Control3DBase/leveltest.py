@@ -54,7 +54,7 @@ class GraphicsProgram3D:
 
 
         self.projection_matrix = ProjectionMatrix()
-        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
+        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.1,F=50)
         self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
         self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
         
@@ -226,6 +226,9 @@ class GraphicsProgram3D:
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
         
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,self.nullTexture)
+
         glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
 
         self.shader.set_lights([self.light1,self.light2])
@@ -344,7 +347,39 @@ class GraphicsProgram3D:
             #return self.maze[x][z]
         else:
             return 0
-    
+    def collision(self,pNow, vector, rad=0,square = False):
+        """
+            Take in the current position and vector that will be moved after,
+            uses the vector to check where it will end up and checks collision on that location
+            use lerp to find where we passed through a wall and 
+            then use the length to there to check which wall we passed through first
+            Returns new vector of how to move after collusion fixes it.
+        """
+        newVector = vector
+        pGoing = pNow +vector
+        X,Z = pGoing.x,pGoing.z
+        
+        if not rad:
+            rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
+        
+        if vector.x<0: vx=-1
+        elif vector.x>0: vx=1
+        else: vx=0
+        #XL = int((pWas.x+vx*leeway)//2)
+        XR = int((pWpGoings.x+vx*rad))
+        XV = int((pNow.x+vx*rad))
+        xtru = XR == XV or True
+
+        if vector.z<0: vz=-1
+        elif vector.z>0: vz=1
+        else: vz=0
+        #ZL = int((pWas.z+vz*leeway)//2)
+        ZR = int((pGoing.z+vz*rad))
+        ZV = int((pNow.z+vz*rad))
+        ztru = ZR == ZV or True
+        
+        return newVector
+
     def maze_collision(self,pNow,vector, rad = 0):
         """The point is were you want to be vector is how you got there"""
         pWas = pNow+(vector*(-1))
@@ -352,7 +387,7 @@ class GraphicsProgram3D:
         Z= int(pWas.z)
         #leeway = 0.25
         if not rad:
-            rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
+            rad =  Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
         
         if vector.x<0: vx=-1
         elif vector.x>0: vx=1

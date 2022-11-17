@@ -166,7 +166,7 @@ class Button:
 class Portal:
     def __init__(self,id, portalDict,xSize,ySize,zSize):
         r =1.57079633
-        offset = 0.01
+        offset = 0.0
         self.active = False
         self.id = id
         self.direction = portalDict["location"]["direction"]

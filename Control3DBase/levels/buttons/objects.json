@@ -102,12 +102,15 @@
         }
     },
     "smallWalls":{
-        "z-start":9.9,
-        "z-end":10.1,
-        "x-start":9,
-        "x-end":11,
-        "y-start":0,
-        "y-end":3
+        "1":{
+            "location":{
+                "box-z":10,
+                "box-x":0,
+                "box-y":1,
+                "direction":[1,0,0],
+                "up":[0,1,0]
+            }
+        }
     }
 
 }

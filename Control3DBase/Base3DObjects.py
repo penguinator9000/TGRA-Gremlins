@@ -22,6 +22,8 @@ class Point:
         return Vector(self.x - other.x, self.y - other.y, self.z - other.z)
     def __str__(self) -> str:
         return "|x:"+str(self.x)+", y:"+str(self.y)+", z:"+str(self.z)+" |"
+def dot2(x1,y1, x2,y2):
+        return x1* x2 + y1 * y2
 
 class Vector:
     def __init__(self, x, y, z):
@@ -67,6 +69,9 @@ class Vector:
     def axWiseMult(self,other):
         return Vector(self.x * other.x , self.y * other.y , self.z * other.z)
     
+    def copy(self):
+        return Vector(self.x*1 ,self.y*1 ,self.z*1 )
+
 
 class Color:
     def __init__(self,r=0,g=0,b=0,a=1):

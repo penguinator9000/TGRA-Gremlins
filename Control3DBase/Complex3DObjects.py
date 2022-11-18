@@ -193,7 +193,7 @@ class Button:
         self.button.draw(shader)
 class Portal:
     def __init__(self,id, portalDict,xSize,ySize,zSize):
-        r =1.57079633
+        r =pi/2
         offset = 0.0
         self.active = False
         self.id = id
@@ -294,11 +294,15 @@ class SmallWall:
         pass
 
 class PortalLink:
-    def __init__(self, ll):
+    def __init__(self, ll,f1,t1,f2,t2):
         self.ll = ll
         self.p1 = None
         self.p2 = None
         self.buttonID = None
+        self.f1=f1
+        self.t1=t1
+        self.f2=f2
+        self.t2=t2
     def update(self,buttonId,p1_Id, p2_Id):
         if self.buttonID:
             if self.buttonID != buttonId:
@@ -310,6 +314,10 @@ class PortalLink:
         self.p1.active = True
         self.p2 = self.ll.portals[p2_Id]
         self.p2.active = True
+        self.p1.portal.color=Color(1, 0.5, 0, 1)
+        self.p2.portal.color=Color(0, 0.5, 1, 1)
+        self.p1.portal.texture=None
+        self.p2.portal.texture=None
         
         
     def clear(self):
@@ -334,7 +342,79 @@ class PortalLink:
             matrix.look(look,Vector(a,b,c))
         else: print("Bro portals aint got no conenctions right now")
 
+    def gibRot(self,d1,d2):
+        if d1 == d2:
+            return pi
+        elif d1+d2 == Vector(0,0,0):
+            return 0
+        if d1.x:
+            boy=d2.z
+        else:
+            boy=d2.x
+        return boy*pi/2
 
+    
+    def portalTexturUpdate(self,shader,viewMatrixObj,projectionMatrixObj,objects):
+        
+        if self.p1 and self.p2:
+            if  self.p1.active and self.p2.active:
+                
+                veiw1 = viewMatrixObj.copy()
+                veiw2 = viewMatrixObj.copy()
+
+                self.p1.portal.color=Color(1,1,1)
+                self.p2.portal.color=Color(1,1,1)
+
+                d1x,d1y,d1z = self.p1.direction
+                d2x,d2y,d2z = self.p2.direction
+
+                d1 = Vector(d1x,d1y,d1z)
+                d2 = Vector(d2x,d2y,d2z)
+
+                rot=self.gibRot(d1,d2)
+
+                p1v=Vector(self.p1.xpos,0,self.p1.zpos)
+                p2v=Vector(self.p2.xpos,0,self.p2.zpos)
+
+                v1=((p1v*(-1))+viewMatrixObj.eye)
+                v2=((p2v*(-1))+viewMatrixObj.eye)
+
+                vv1=Vector(v1.x*cos(rot) -v1.z*sin(rot) ,v1.y,v1.x*sin(rot) +v1.z*cos(rot))
+                rot2=-rot
+                vv2=Vector(v2.x*cos(rot) -v2.z*sin(rot) ,v2.y,v2.x*sin(rot) +v2.z*cos(rot))
+                n=viewMatrixObj.n
+                nn =Vector(n.x*cos(rot) -n.z*sin(rot) ,n.y,v2.x*sin(rot) +n.z*cos(rot))
+
+                veiw1.eye=veiw1.eye+vv2
+                veiw2.eye=veiw2.eye+vv1
+                u1x,u1y,u1z = self.p1.up
+                veiw1.look(veiw1.eye-nn,Vector(u1x,-u1y,u1z))
+                #veiw1.look(p1v,Vector(u1x,-u1y,u1z))
+                u2x,u2y,u2z = self.p2.up
+                veiw2.look(veiw2.eye-nn,Vector(u2x,-u2y,u2z))
+                #veiw2.look(p2v,Vector(u2x,-u2y,u2z))
+                glBindFramebuffer(GL_FRAMEBUFFER, self.f1)
+                glClearColor(1, 0.5, 0, 1)
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)# // we're not using the stencil buffer now
+                glEnable(GL_DEPTH_TEST)
+                shader.set_view_matrix(veiw1.get_matrix(),veiw1.eye)
+                shader.set_projection_matrix(projectionMatrixObj.get_matrix())#need to edit
+                for obj in objects:
+                    obj.draw(shader)
+                self.ll.pDraw(shader,self.p2.id)
+                self.p1.portal.texture=self.t1
+                glBindFramebuffer(GL_FRAMEBUFFER,0)
+                glBindFramebuffer(GL_FRAMEBUFFER, self.f2)
+                glClearColor(0, 0.5, 1, 1)
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)# // we're not using the stencil buffer now
+                glEnable(GL_DEPTH_TEST)
+                shader.set_view_matrix(veiw2.get_matrix(),veiw2.eye)
+                shader.set_projection_matrix(projectionMatrixObj.get_matrix())#need to edit
+                for obj in objects:
+                    obj.draw(shader)
+                self.ll.pDraw(shader,self.p1.id)
+                self.p2.portal.texture=self.t2
+                glBindFramebuffer(GL_FRAMEBUFFER,0)
 
 if __name__ == "__main__":
     from leveltest import *

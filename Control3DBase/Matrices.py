@@ -176,7 +176,14 @@ class ViewMatrix:
                 self.v.x, self.v.y, self.v.z, minusEye.dot(self.v),
                 self.n.x, self.n.y, self.n.z, minusEye.dot(self.n),
                 0,        0,        0,        1]
-
+    def copy(self):
+        new=ViewMatrix()
+        new.eye = self.eye
+        new.u = self.u
+        new.v = self.v
+        new.n = self.n
+        new.up = self.up
+        return new
 
 # The ProjectionMatrix class builds transformations concerning
 # the camera's "lens"

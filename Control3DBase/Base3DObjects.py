@@ -44,12 +44,14 @@ class Vector:
     def __eq__(self, other: object) -> bool:
         return self.x == other.x and self.y == other.y and self.z == other.z
     
-    def normalize(self):
+    def normalize(self,out=False):
         length = self.__len__()
-        if length!=0:
+        if length!=0 and not out:
             self.x /= length
             self.y /= length
             self.z /= length
+        elif length!=0 :
+            return Vector(self.x / length,self.y / length,self.z / length)
 
     def dot(self, other):
         return self.x * other.x + self.y * other.y + self.z * other.z
@@ -61,6 +63,10 @@ class Vector:
     
     def list(self):
         return [self.x,self.y,self.z]
+    
+    def axWiseMult(self,other):
+        return Vector(self.x * other.x , self.y * other.y , self.z * other.z)
+    
 
 class Color:
     def __init__(self,r=0,g=0,b=0,a=1):
@@ -146,14 +152,16 @@ class Cube:
                          1.0, 0.0,
                          0.0, 0.0]*12
         
-    def draw(self, shader):
+        
+    def draw(self, shader,skipSides=[]):
         
         shader.set_position_attribute(self.position_array)
         shader.set_normal_attribute(self.normal_array)
         shader.set_uv_attribute(self.uv_array)
         
         for i in range(6):
-            glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
+            if not(i in skipSides):
+                glDrawArrays(GL_TRIANGLE_FAN, i*4, 4)
 
 class D8:
     def __init__(self):
@@ -335,6 +343,14 @@ class LoopBayesianCurves4P:
 def det(M2x2):
     a,b,c,d = M2x2
     return (a*d)-(b*c)
+def det3(M3x3):
+    top=M3x3[:3]
+    mid=M3x3[3:6]
+    bot=M3x3[3:6]
+    a=top[0]*det(mid[:2]+bot[:2])
+    b=top[1]*det([mid[0],mid[2],bot[0],bot[2]])
+    c=top[2]*det(mid[1:]+bot[1:])
+    return a-b+c
 class Mesh:
     def __init__(self,n,m,pos=Point(0,0,0),color=Color(),vertex="1",texture="triangle"):
         self.PointMatrix=[[pos]*m]*n
@@ -550,6 +566,7 @@ class Lava():
         self.update(0)
 
     def update(self,dtime):
+        return None
         self.timeElapsed +=dtime/1000
         
         N,M = self.nm
@@ -574,13 +591,14 @@ class Lava():
         self.mesh.ColorMatrix=[[ (botColor.intensity(1-yPs[m+n*M]))+(topColor.intensity(yPs[m+n*M])) for m in range(M) ] for n in range(N)]
     
     def draw(self,shader):
+        return None
         self.mesh.draw(shader)
 
 
 
 
 if __name__ == "__main__":
-    from Control3DProgram import *
+    from leveltest import *
     GraphicsProgram3D().start() 
                     
                         

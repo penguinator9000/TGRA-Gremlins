@@ -65,7 +65,7 @@ class LevelLoader():
                             self.layout[ycount][zcount].append(toAppend) #exchange this for object at some point.
                             if toAppend:
                                 self.walls.append(toAppend)
-                                toAppend.portal = None
+                                toAppend.portals = []
                                 toAppend.texture = wallTexture
                                 toAppend.spectexture = specWallTexture
                             xcount +=1
@@ -97,7 +97,7 @@ class LevelLoader():
             self.portals[id] = tmp
             x,y,z = dict["location"]["box-x"],dict["location"]["box-y"],dict["location"]["box-z"]
             locationRef = (x,y,z)
-            self.layout[y][z][x].portal = tmp
+            self.layout[y][z][x].portals.append(tmp)
             if locationRef not in self.objectLevelreference:
                 self.objectLevelreference[locationRef] = [tmp]
             else: 
@@ -122,8 +122,12 @@ class LevelLoader():
             Draws the entire level with all objects 
         """
         for i in self.walls:
+            skipSides=[]
+            for portal in i.portals:
+                if portal.active:
+                    skipSides.append(portal.face)
             pass
-            i.draw(shader)
+            i.draw(shader,skipSides)
         for obj in self.objectList:
             obj.draw(shader)
         if self.lava: self.lava.draw(shader)

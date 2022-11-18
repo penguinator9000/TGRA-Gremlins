@@ -68,9 +68,12 @@ class GraphicsProgram3D:
 
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.1,F=50)
-        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 12, ambiance=Color(0.2,0.2,0.2))
+        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 9, ambiance=Color(0.2,0.2,0.2))
         self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
-        
+        self.light3 = Light(Point(6,3,8),Color(0.7,0.7,0.7),reach= 6, ambiance=Color(0.2,0.2,0))
+        self.light4 = Light(Point(2,3,8),diffuse=Color(0.5,0.5,0), ambiance=Color(0.1,0.1,0.1),reach = 5)
+
+
         self.view_matrix = ViewMatrix()
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
         self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
@@ -106,8 +109,7 @@ class GraphicsProgram3D:
         self.portalLink.update("reset","1","2")
         self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
         self.portalLink.update("reset","1","2")
-        self.portalLink.p1.portal.texture=None
-        self.portalLink.p2.portal.texture=None
+        
 
 
 
@@ -253,7 +255,7 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
 
         
-        self.shader.set_lights([self.light1,self.light2])
+        self.shader.set_lights([self.light1,self.light2,self.light3,self.light4])
 
         if self.map_on:
             glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))

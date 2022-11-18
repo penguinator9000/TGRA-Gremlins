@@ -219,3 +219,8 @@ class PortalLink:
         self.p2.active = False
         self.p1 = None
         self.p2 = None
+    def teleport(self,inportal):
+        """
+            use the input portal to return the new position of the object
+        """
+        pass

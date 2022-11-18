@@ -134,9 +134,10 @@ class LevelLoader():
         """
         pass
     def queryLevel(self,x,z,y = 1):
-        x = x//self.xSize
-        z = z//self.zSize
-        y = (y+2)//self.ySize
+        x = int(x//self.xSize)
+        z = int(z//self.zSize)
+        y = int((y+2)//self.ySize)
+        #print(x,y,z)
         if x >= self.xMax or x < 0: return 0
         if z >= self.zMax or z < 0: return 0 
         return self.layout[y][z][x]

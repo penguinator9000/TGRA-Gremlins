@@ -355,8 +355,8 @@ class GraphicsProgram3D:
             then use the length to there to check which wall we passed through first
             Returns new vector of how to move after collusion fixes it.
         """
-        newVector = vector
-        pGoing = pNow +vector
+        newVector = Vector(0,0,0)
+        pGoing = vector + pNow
         X,Z = pGoing.x,pGoing.z
         
         if not rad:
@@ -366,23 +366,78 @@ class GraphicsProgram3D:
         elif vector.x>0: vx=1
         else: vx=0
         #XL = int((pWas.x+vx*leeway)//2)
-        XR = int((pWpGoings.x+vx*rad))
-        XV = int((pNow.x+vx*rad))
+        XR = int((pNow.x+vx*rad))
+        XV = int((pGoing.x+vx*rad))
         xtru = XR == XV or True
 
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
         #ZL = int((pWas.z+vz*leeway)//2)
-        ZR = int((pGoing.z+vz*rad))
-        ZV = int((pNow.z+vz*rad))
+        ZR = int((pNow.z+vz*rad))
+        ZV = int((pGoing.z+vz*rad))
         ztru = ZR == ZV or True
-        
+        quacko = None
+        didcolision=False
+        if xtru:
+            q = self.ll.queryLevel(XV,Z)
+            if q:
+                #print("Collision x at ",XV,Z,q)
+                #print("q.pos",q.pos,"pNow.x",pNow.x)
+                #pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
+                collided = False
+                didcolision=True
+                if q.portal:
+                    if q.portal.active: print("hecking portal")
+                #for i in q.portals:
+                #    if i.active: 
+                #        self.portalLink.teleport(i)
+                #        print('portal collision')
+                #        collided = True
+                if not collided:
+                    pass #fix vector add to new vector
+                #print("q.pos",q.pos,"pNow.x",pNow.x)        
+        if ztru:
+            q = self.ll.queryLevel(X,ZV)
+            if q:
+                #print("Collision z at ", X, ZV,q)
+                #print("q.pos",q.pos,"pNow.z",pNow.z)
+                #fix
+                collided = False
+                didcolision=True
+                if q.portal:
+                    if q.portal.active: print("hecking portal")
+                #for i in q.portals:
+                #    if i.active: 
+                #        self.portalLink.teleport(i)
+                #        print('portal collision')
+                #        collided = True
+                if not collided:
+                    pass #fix vector add to new vector
+    
+                
+    
+        if not didcolision:
+            q = self.ll.queryLevel(XV,ZV)
+            if q:
+                #print("Collision xz at ", XV, ZV,q)
+                vector.normalize()
+                side = q.pos-pNow + (vector*rad)
+                if not quacko:
+                    quacko = q
+                if side.x >= side.z:
+                    pass
+                else:
+                    pass
+                didcolision = True
+        if not didcolision: return vector
         return newVector
 
     def maze_collision(self,pNow,vector, rad = 0):
         """The point is were you want to be vector is how you got there"""
+        
         pWas = pNow+(vector*(-1))
+        #self.collision(pWas,vector)
         X= int(pWas.x)
         Z= int(pWas.z)
         #leeway = 0.25

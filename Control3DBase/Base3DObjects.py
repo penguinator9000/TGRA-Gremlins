@@ -566,7 +566,7 @@ class Lava():
         self.update(0)
 
     def update(self,dtime):
-        return None
+        #return None
         self.timeElapsed +=dtime/1000
         
         N,M = self.nm
@@ -574,7 +574,7 @@ class Lava():
         yMin,yMax=self.Yrange
         zMin,zMax=self.Zrange
         yPs=[]
-        def X(m):return xMin + m*(xMax-xMin)/M
+        def X(m):return xMin + (m/(M-1))*(xMax-xMin)
         def Y(n,m):
             time=self.timeElapsed*self.animationSpeed
             xW=self.Wave[(n+time)/self.WaveScale.x].x
@@ -585,13 +585,13 @@ class Lava():
             yPs.append(yP)
             y = yMin +yP *(yMax-yMin)
             return y 
-        def Z(n):return zMin + n*(zMax-zMin)/N
+        def Z(n):return zMin + (n/(N-1))*(zMax-zMin)
         self.mesh.PointMatrix=[ [ Point(X(n),Y(n,m),Z(m)) for m in range(M) ] for n in range(N)]
         botColor,topColor=self.Colors
         self.mesh.ColorMatrix=[[ (botColor.intensity(1-yPs[m+n*M]))+(topColor.intensity(yPs[m+n*M])) for m in range(M) ] for n in range(N)]
     
     def draw(self,shader):
-        return None
+        #return None
         self.mesh.draw(shader)
 
 

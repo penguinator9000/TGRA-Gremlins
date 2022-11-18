@@ -296,6 +296,8 @@ class PortalLink:
         self.p2.active = True
         self.p1.portal.color=Color(1, 0.5, 0, 1)
         self.p2.portal.color=Color(0, 0.5, 1, 1)
+        self.p1.portal.texture=None
+        self.p2.portal.texture=None
         
         
     def clear(self):

@@ -105,7 +105,9 @@ class GraphicsProgram3D:
         self.portalLink = PortalLink(self.ll,f1,t1,f2,t2)
         self.portalLink.update("reset","1","2")
         self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
-
+        self.portalLink.update("reset","1","2")
+        self.portalLink.p1.portal.texture=None
+        self.portalLink.p2.portal.texture=None
 
 
 
@@ -244,7 +246,7 @@ class GraphicsProgram3D:
         
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
-        if self.FBOon:
+        if self.FBO_on:
             self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
         
         glActiveTexture(GL_TEXTURE0)

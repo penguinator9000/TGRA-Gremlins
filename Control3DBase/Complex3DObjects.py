@@ -324,11 +324,11 @@ class PortalLink:
         if self.p1 and self.p2:
             if self.p1.id == inPortal.id: outPortal = self.p2
             else: outPortal = self.p1
-            #print(inPortal.id,outPortal.id)
-            toPort.x = outPortal.xpos
-            toPort.y = outPortal.ypos
-            toPort.z = outPortal.zpos
             x,y,z = outPortal.direction
+            toPort.x = outPortal.xpos + x*0.25
+            toPort.y = outPortal.ypos + y*0.25
+            toPort.z = outPortal.zpos + z*0.25
+            
             look = Vector(outPortal.xpos,outPortal.ypos,outPortal.zpos)+Vector(x,y,z)
             a,b,c = outPortal.up
             matrix.look(look,Vector(a,b,c))

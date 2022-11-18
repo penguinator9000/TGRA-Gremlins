@@ -104,9 +104,6 @@ class GraphicsProgram3D:
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
-        self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
-        #self.BOI.randomstart(self)
-        self.objects.append(self.BOI)
 
         lava_tex1 = get_texture("lava-texture1.jpg")
         lava_tex2 = get_texture("lava-texture2.jpg")
@@ -168,9 +165,9 @@ class GraphicsProgram3D:
         if self.d_key_down:
             self.movement+=self.view_matrix.calculateMovementVector(delU=delta_time*2)
         
-        if self.movement!=Vector(0,0,0):
-            move = self.collision(self.view_matrix.eye, self.movement)
-            self.view_matrix.eye += move
+        
+        move = self.collision(self.view_matrix.eye, self.movement)
+        self.view_matrix.eye += move
 
 
         self.GuyRotation=self.GuyRotation%(pi*2)
@@ -195,36 +192,15 @@ class GraphicsProgram3D:
 
         self.light1.pos= Point( self.view_matrix.eye.x ,self.view_matrix.eye.y+2 ,self.view_matrix.eye.z)
 
-        boiWentVec = self.BOI.move(delta_time)
-        collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
-        #print(self.BOI.pos)
-        if collided:
-            self.BOI.moveTo(self.BOI.pos.x,self.BOI.pos.z)
-            boiWentVec.normalize()
-            # side = q.pos-pNow + (vector*rad)
-            #print(collided.pos)
-            side = collided.pos-self.BOI.pos + (boiWentVec*self.BOI.radius)
-            if abs(side.x) < abs(side.z):
-                self.BOI.reflect(Vector(1,0,0))
-                #print("x",self.BOI.boingPlaces,side)
-            else:
-                self.BOI.reflect(Vector(0,0,1))
-        self.BOI.spinny(delta_time)
+        
         if self.view_matrix.eye.y < -1:
             self.view_matrix.eye.x = 3
             self.view_matrix.eye.z = 3
             self.view_matrix.eye.y = 0.5
-        if self.BOI.kill(self.view_matrix.eye,self.projection_matrix): 
-            self.view_matrix.eye.x = 3
-            self.view_matrix.eye.z = 3
-            pass
-        if self.ll.queryLevel(int(self.BOI.pos.x),int(self.BOI.pos.z)) == 0:
-            self.BOI.randomstart(self)
         if self.ll.queryLevel(int(self.view_matrix.eye.x),int(self.view_matrix.eye.z//2)) == 0:
             global WIN
             WIN=True
             #return True
-        self.light2.pos= Point( self.BOI.pos.x,self.BOI.pos.y+0.5,self.BOI.pos.z)
 
 
         self.ll.lava.update(delta_time)

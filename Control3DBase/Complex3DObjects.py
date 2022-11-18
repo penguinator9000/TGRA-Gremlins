@@ -333,21 +333,25 @@ class PortalLink:
                 d1 = Vector(d1x,d1y,d1z)
                 d2 = Vector(d2x,d2y,d2z)
                 rot=self.gibRot(d1,d2)
+
                 p1v=Vector(self.p1.xpos,self.p1.ypos,self.p1.zpos)
                 p2v=Vector(self.p2.xpos,self.p2.ypos,self.p2.zpos)
                 v1=((p1v*(-1))+viewMatrixObj.eye)
                 v2=((p2v*(-1))+viewMatrixObj.eye)
+
                 vv1=Vector(v1.x*cos(rot) -v1.z*sin(rot) ,v1.y,v1.x*sin(rot) +v1.z*cos(rot))
                 rot2=rot
                 vv2=Vector(v2.x*cos(rot) -v2.z*sin(rot) ,v2.y,v2.x*sin(rot) +v2.z*cos(rot))
                 n=viewMatrixObj.n
                 nn =Vector(n.x*cos(rot) -n.z*sin(rot) ,n.y,v2.x*sin(rot) +n.z*cos(rot))
-                veiw1.eye=veiw1.eye-vv1
-                veiw2.eye=veiw2.eye-vv2
+                veiw1.eye=veiw1.eye+vv1
+                veiw2.eye=veiw2.eye+vv2
                 u1x,u1y,u1z = self.p1.up
                 veiw1.look(veiw1.eye-nn,Vector(u1x,-u1y,u1z))
+                #veiw1.look(p1v,Vector(u1x,-u1y,u1z))
                 u2x,u2y,u2z = self.p2.up
                 veiw2.look(veiw2.eye-nn,Vector(u2x,-u2y,u2z))
+                #veiw2.look(p2v,Vector(u2x,-u2y,u2z))
                 glBindFramebuffer(GL_FRAMEBUFFER, self.f1)
                 glClearColor(1, 0.5, 0, 1)
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)# // we're not using the stencil buffer now
@@ -356,7 +360,7 @@ class PortalLink:
                 shader.set_projection_matrix(projectionMatrixObj.get_matrix())#need to edit
                 for obj in objects:
                     obj.draw(shader)
-                self.ll.pDraw(shader,self.p1.id)
+                self.ll.pDraw(shader,self.p2.id)
                 self.p1.portal.texture=self.t1
                 glBindFramebuffer(GL_FRAMEBUFFER,0)
                 glBindFramebuffer(GL_FRAMEBUFFER, self.f2)
@@ -367,7 +371,7 @@ class PortalLink:
                 shader.set_projection_matrix(projectionMatrixObj.get_matrix())#need to edit
                 for obj in objects:
                     obj.draw(shader)
-                self.ll.pDraw(shader,self.p2.id)
+                self.ll.pDraw(shader,self.p1.id)
                 self.p2.portal.texture=self.t2
                 glBindFramebuffer(GL_FRAMEBUFFER,0)
 

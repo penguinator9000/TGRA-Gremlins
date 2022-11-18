@@ -108,6 +108,15 @@ class LevelLoader():
             tmp = SmallWall(id,dict,self.xSize,self.ySize,self.zSize)
             self.objectList.append(tmp)
             self.smallWalls[id] = tmp
+            x,y,z = dict["location"]["box-x"],dict["location"]["box-y"],dict["location"]["box-z"]
+            locationRef = (x,y,z)
+            if locationRef not in self.objectLevelreference:
+                print("wall at",locationRef)
+                self.objectLevelreference[locationRef] = [tmp]
+            else:
+                print("wall at",locationRef) 
+                self.objectLevelreference[locationRef].append(tmp)
+            
             """
             #fix me fucked shit yaknow
             locationRef = (dict["box-x"],dict["box-y"],dict["box-z"])
@@ -178,16 +187,20 @@ class LevelLoader():
             Query the level returning wether the point is above floor colliding with a wall or
         """
         return 
-    def queryObjects(self,x,y,z):
-        x = x//self.xSize
-        z = z//self.zSize
-        y = (y+2)//self.ySize
+    def queryObjects(self,x,z,y):
+        x = int(x//self.xSize)
+        z = int(z//self.zSize)
+        y = int((y)//self.ySize)
         """
             Query the level and return any objects found to inhibit that cell
         
         """
-        try: return self.objectLevelreference[(x,y,z)]
-        except: return None
+        ret = None
+        try:
+            ret = self.objectLevelreference[(x,y,z)] 
+        except: return ret
+        print(ret)
+        return ret
     def queryPortal(self,x,z,y = 1):
         x = x//self.xSize
         z = z//self.zSize

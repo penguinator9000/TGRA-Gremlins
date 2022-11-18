@@ -147,6 +147,7 @@ class Button:
         return lerp(start,end,offset)
         pass
     def __init__(self,id, button_dict,xSize,ySize,zSize,buttonsize = 0.1):
+        self.type = "b"
         self.buttonSize = buttonsize
         self.id = id
         self.height = 0.433
@@ -193,6 +194,7 @@ class Button:
         self.button.draw(shader)
 class Portal:
     def __init__(self,id, portalDict,xSize,ySize,zSize):
+        self.type = "p"
         r =pi/2
         offset = 0.0
         self.active = False
@@ -228,7 +230,7 @@ class Portal:
 class SmallWall:
     def __init__(self,id, smallWallDict,xSize,ySize,zSize,pillarcount=3,barcount=1,Smaller=0.2,barUpSmaller=0.1):
         self.id = id
-        
+        self.type = "sw"
         SizeV=Vector(xSize,ySize,zSize)
         BoxPos=Vector(smallWallDict["location"]["box-x"],smallWallDict["location"]["box-y"],smallWallDict["location"]["box-z"])
         posDir=Vector(smallWallDict["location"]["direction"][0]*xSize,smallWallDict["location"]["direction"][1]*ySize,smallWallDict["location"]["direction"][2]*zSize)
@@ -373,20 +375,20 @@ class PortalLink:
 
                 rot=self.gibRot(d1,d2)
 
-                p1v=Vector(self.p1.xpos,0,self.p1.zpos)
-                p2v=Vector(self.p2.xpos,0,self.p2.zpos)
+                p1v=Vector(self.p1.xpos,self.p1.ypos,self.p1.zpos)
+                p2v=Vector(self.p2.xpos,self.p1.ypos,self.p2.zpos)
 
                 v1=((p1v*(-1))+viewMatrixObj.eye)
                 v2=((p2v*(-1))+viewMatrixObj.eye)
 
-                vv1=Vector(v1.x*cos(rot) -v1.z*sin(rot) ,v1.y,v1.x*sin(rot) +v1.z*cos(rot))
+                vv1=Vector(v1.x*cos(rot) -v1.z*sin(rot) ,1,v1.x*sin(rot) +v1.z*cos(rot))
                 rot2=-rot
-                vv2=Vector(v2.x*cos(rot) -v2.z*sin(rot) ,v2.y,v2.x*sin(rot) +v2.z*cos(rot))
+                vv2=Vector(v2.x*cos(rot) -v2.z*sin(rot) ,1,v2.x*sin(rot) +v2.z*cos(rot))
                 n=viewMatrixObj.n
                 nn =Vector(n.x*cos(rot) -n.z*sin(rot) ,n.y,v2.x*sin(rot) +n.z*cos(rot))
 
-                veiw1.eye=veiw1.eye+vv2
-                veiw2.eye=veiw2.eye+vv1
+                veiw1.eye=veiw1.eye+vv2.normalize(out = True)
+                veiw2.eye=veiw2.eye+vv1.normalize(out = True)
                 u1x,u1y,u1z = self.p1.up
                 veiw1.look(veiw1.eye-nn,Vector(u1x,-u1y,u1z))
                 #veiw1.look(p1v,Vector(u1x,-u1y,u1z))

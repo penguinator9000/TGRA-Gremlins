@@ -439,16 +439,20 @@ class GraphicsProgram3D:
         if not didcolision:
             q = self.ll.queryLevel(XV,ZV,y)
             if q:
-                
                 newVector += Vector(sqrt(pow((q.size.x*(-vx)*(0.5) + q.pos.x) + rad*(-vx)-pGoing.x,2)),0,sqrt(pow((q.size.z*(-vz)*(0.5) + q.pos.z) +rad*(-vz)-pGoing.z,2)))
                 didcolision = True
                 #print("spicy collision ",newVector)
         newVector += vector
+        q = self.ll.queryObjects(pGoing.x,pGoing.z, y)
+        if q:
+            for i in q:
+                if i.type == "sw":
+                    swcc = i.collisionCube
+                    print(i.type)    
         pGoing = pNow +newVector
         pGoing.y += -FallingSpeed
         #now for falling here
         #print(y,pGoing.y)
-        notq = self.ll.queryLevel(pGoing.x,pGoing.z,y)
         q = self.ll.queryLevel(pGoing.x,pGoing.z,pGoing.y-0.5)
         if not q:
             newVector.y += - FallingSpeed

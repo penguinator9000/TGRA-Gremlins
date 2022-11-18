@@ -245,8 +245,8 @@ class SmallWall:
             
             p=Vector(self.pos.x,self.pos.y,self.pos.z)+sideSize*(-0.5)
             sideSmall = sideSize*Smaller
-            ler=lerp(sideSize+sideSmall*(-1),Vector(0,0,0),(i/pillarcount))
-            print(p,ler,sideSize,(i/pillarcount))
+            ler=lerp(sideSize,Vector(0,0,0),((i+0.5)/pillarcount))
+            #print(p,ler,sideSize,(i/pillarcount))
             p=ler+p#+sideSmall
             G=GraphicalObject(Cube(),pillaSize,pos =p.list() )
             G.model_matrix.add_rotation(rot.x,rot.y,rot.z)

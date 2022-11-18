@@ -16,6 +16,7 @@ import sys
 import time
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+PORTAL_TEXTURE_FIDIELLTY=300
 from Shaders import *
 from Matrices import *
 from Complex3DObjects import *
@@ -42,6 +43,18 @@ def get_texture(name):
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
     return tex_id
 
+def FBO(Fidellity):
+    fbo = GLuint()
+    glGenFramebuffers(1, fbo)
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+
+    tex_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, tex_id)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Fidellity, Fidellity, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0)
+    return fbo,tex_id
 
 class GraphicsProgram3D:
     def __init__(self):
@@ -82,12 +95,14 @@ class GraphicsProgram3D:
         
         tile_tex=get_texture("A2x2tileWhiteMarble.jpg")
         rand_spec_tex=get_texture("A-Java-G.png")
-
+        
+        f1,t1 = FBO(PORTAL_TEXTURE_FIDIELLTY)
+        f2,t2 = FBO(PORTAL_TEXTURE_FIDIELLTY)
 
         c = Cube()
         self.ll = LevelLoader(sys.path[0]+"/levels")
         self.ll.load("buttons",tile_tex,rand_spec_tex)
-        self.portalLink = PortalLink(self.ll)
+        self.portalLink = PortalLink(self.ll,f1,t1,f2,t2)
         self.portalLink.update("reset","1","2")
 
 
@@ -226,13 +241,12 @@ class GraphicsProgram3D:
         
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
-        
+        self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
 
         
         self.shader.set_lights([self.light1,self.light2])
-
 
         if self.map_on:
             glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))

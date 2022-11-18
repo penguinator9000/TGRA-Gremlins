@@ -67,6 +67,9 @@ class Vector:
     def axWiseMult(self,other):
         return Vector(self.x * other.x , self.y * other.y , self.z * other.z)
     
+    def copy(self):
+        return Vector(self.x*1 ,self.y*1 ,self.z*1 )
+
 
 class Color:
     def __init__(self,r=0,g=0,b=0,a=1):

@@ -69,14 +69,15 @@ class GraphicsProgram3D:
         self.projection_matrix = ProjectionMatrix()
         self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.1,F=50)
         self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 9, ambiance=Color(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
-        self.light3 = Light(Point(6,3,8),Color(0.7,0.7,0.7),reach= 6, ambiance=Color(0.2,0.2,0))
-        self.light4 = Light(Point(2,3,8),diffuse=Color(0.5,0.5,0), ambiance=Color(0.1,0.1,0.1),reach = 5)
+        self.light2 = Light(Point(2,1,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
+        self.light3 = Light(Point(8,3,10),Color(0.7,0.7,0.7),reach= 6, ambiance=Color(0.2,0.2,0))
+        self.light4 = Light(Point(2,2,15),diffuse=Color(0.5,0.5,0), ambiance=Color(0.1,0.1,0.1),reach = 5)
 
+        self.StartPos=Point(2.5,1,2)
 
         self.view_matrix = ViewMatrix()
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
-        self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
+        self.view_matrix.eye=self.StartPos
         self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
@@ -97,7 +98,7 @@ class GraphicsProgram3D:
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
         
         tile_tex=get_texture("A2x2tileWhiteMarble.jpg")
-        rand_spec_tex=get_texture("A-Java-G.png")
+        rand_spec_tex=tile_tex
         
         f1,t1 = FBO(PORTAL_TEXTURE_FIDIELLTY)
         f2,t2 = FBO(PORTAL_TEXTURE_FIDIELLTY)
@@ -216,13 +217,12 @@ class GraphicsProgram3D:
 
         
         if self.view_matrix.eye.y < -1:
-            self.view_matrix.eye.x = 3
-            self.view_matrix.eye.z = 3
-            self.view_matrix.eye.y = 0.5
-        if self.ll.queryLevel(int(self.view_matrix.eye.x),int(self.view_matrix.eye.z//2)) == 0:
+            self.view_matrix.eye = self.StartPos
+            
+        if self.ll.queryLevel(int(self.view_matrix.eye.x),int(self.view_matrix.eye.z)) == 0:
             global WIN
             WIN=True
-            #return True
+            return True
 
 
         self.ll.lava.update(delta_time)

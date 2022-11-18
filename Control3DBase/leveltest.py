@@ -447,8 +447,7 @@ class GraphicsProgram3D:
         if q:
             for i in q:
                 if i.type == "sw":
-                    swcc = i.collisionCube
-                    print(i.type)    
+                    swcc = i.collisionCube    
         pGoing = pNow +newVector
         pGoing.y += -FallingSpeed
         #now for falling here

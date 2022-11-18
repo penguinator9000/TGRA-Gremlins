@@ -68,6 +68,7 @@ class LevelLoader():
                                 toAppend.portals = []
                                 toAppend.texture = wallTexture
                                 toAppend.spectexture = specWallTexture
+                                toAppend.boxXYZ=(xcount,ycount,zcount)
                             xcount +=1
                         wall = not wall
                     zcount += 1
@@ -132,11 +133,39 @@ class LevelLoader():
             obj.draw(shader)
         if self.lava: self.lava.draw(shader)
         
-    def pDraw( self, portalId):
+    def pDraw( self,shader, portalId):
         """
             Draws the level in respect to the portal passed as so that a frame buffer can be made.
         """
-        pass
+        portal = self.portals[portalId]
+        Px,Py,Pz=portal.boxXYZ
+        xd,yd,zd = portal.direction
+        dirV=Vector(xd,yd,zd)
+        portPosV= Vector(Px,Py,Pz)
+        portDirV=portPosV.axWiseMult(dirV)
+        portDirSum=sum(portDirV.list())
+
+        for i in self.walls:
+            xi,yi,zi=i.boxXYZ
+            iSum = sum(Vector(xi,yi,zi).axWiseMult(dirV).list())
+            #print(portDirSum,iSum,portDirSum<iSum)
+            if portDirSum<iSum:
+                skipSides=[]
+                for portal in i.portals:
+                    if portal.active:
+                        skipSides.append(portal.face)
+                pass
+                i.draw(shader,skipSides)
+            #else:
+                #print("woop")
+        for obj in self.objectList:
+            xi,yi,zi=obj.boxXYZ
+            iSum = sum(Vector(xi,yi,zi).axWiseMult(dirV).list())
+            if portDirSum<iSum:
+                obj.draw(shader)
+            
+        if self.lava: self.lava.draw(shader)#might be not good
+        
     def queryLevel(self,x,z,y = 1):
         x = int(x//self.xSize)
         z = int(z//self.zSize)

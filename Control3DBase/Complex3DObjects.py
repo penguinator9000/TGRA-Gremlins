@@ -150,6 +150,10 @@ class Button:
         self.buttonSize = buttonsize
         self.id = id
         self.height = 0.433
+        x = button_dict["box-x"]
+        y = button_dict["box-y"]
+        z = button_dict["box-z"]
+        self.boxXYZ=(x,y,z)
         self.xpos = self.cordCalcs(button_dict["box-x"],xSize,button_dict['placement']["x-offset"])
         self.ypos = button_dict["box-y"]*ySize+self.height/2
         self.zpos = self.cordCalcs(button_dict["box-z"],zSize,button_dict['placement']["z-offset"])
@@ -179,6 +183,7 @@ class Portal:
         x = portalDict["location"]["box-x"]
         y = portalDict["location"]["box-y"]
         z = portalDict["location"]["box-z"]
+        self.boxXYZ=(x,y,z)
         self.xpos = x*xSize+xSize/2 + xd*(xSize+offset)/2
         self.ypos = (y-1)*ySize+ySize/2+ yd*(ySize+offset)/2
         self.zpos = z*zSize+zSize/2 + zd*(zSize+offset)/2
@@ -203,13 +208,14 @@ class Portal:
 class SmallWall:
     def __init__(self,id, smallWallDict,xSize,ySize,zSize,pillarcount=3,barcount=1,Smaller=0.2,barUpSmaller=0.1):
         self.id = id
+        
         SizeV=Vector(xSize,ySize,zSize)
-        BoxPos=Point(smallWallDict["location"]["box-x"],smallWallDict["location"]["box-y"],smallWallDict["location"]["box-z"])
+        BoxPos=Vector(smallWallDict["location"]["box-x"],smallWallDict["location"]["box-y"],smallWallDict["location"]["box-z"])
         posDir=Vector(smallWallDict["location"]["direction"][0]*xSize,smallWallDict["location"]["direction"][1]*ySize,smallWallDict["location"]["direction"][2]*zSize)
         PosSize=posDir.axWiseMult(SizeV)
         PosSizeHalf=PosSize*0.5
         self.pos = Point(BoxPos.x*xSize + xSize/2+PosSizeHalf.x,(BoxPos.y-1)*ySize + ySize/2+PosSizeHalf.y,BoxPos.z*zSize+zSize/2++PosSizeHalf.z)
-
+        self.boxXYZ=BoxPos.list()
         upDir=Vector(smallWallDict["location"]["up"][0],smallWallDict["location"]["up"][1],smallWallDict["location"]["up"][2])
         colliSize=[]
         pillaSize=[]

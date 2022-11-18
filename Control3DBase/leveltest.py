@@ -117,6 +117,7 @@ class GraphicsProgram3D:
 
         self.perspective_max=2
         self.perspective_view=0
+        self.map_on=False
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -229,20 +230,23 @@ class GraphicsProgram3D:
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
 
-        glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
-
+        
         self.shader.set_lights([self.light1,self.light2])
 
-        self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
-        self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
 
-        for obj in self.objects:
-            obj.draw(self.shader)
-        self.ll.draw(self.shader)
-        #for obj in self.mazeObjects:
-        #    obj.draw(self.shader)
-        self.Guy2.draw(self.shader)
-        self.Guy.draw(self.shader)
+        if self.map_on:
+            glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+
+            self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
+            self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
+
+            for obj in self.objects:
+                obj.draw(self.shader)
+            self.ll.draw(self.shader)
+            #for obj in self.mazeObjects:
+            #    obj.draw(self.shader)
+            self.Guy2.draw(self.shader)
+            self.Guy.draw(self.shader)
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
@@ -280,6 +284,8 @@ class GraphicsProgram3D:
 
                     if event.key == K_SPACE:
                         self.perspective_view = (self.perspective_view+1)%self.perspective_max 
+                    if event.key == K_m:
+                        self.map_on=(not self.map_on)
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 

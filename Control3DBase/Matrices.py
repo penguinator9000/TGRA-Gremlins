@@ -140,7 +140,8 @@ class ViewMatrix:
     def slide(self, delU=0, delV=0, delN=0):
         self.eye += self.u * delU + self.v * delV + self.n * delN
         return self.u * delU + self.v * delV + self.n * delN
-
+    def calculateMovementVector(self, delU=0, delV=0, delN=0):
+        return self.u * delU + self.v * delV + self.n * delN
     def roll(self,angle):
         """we use radians!!!"""
         angCos = cos(angle)

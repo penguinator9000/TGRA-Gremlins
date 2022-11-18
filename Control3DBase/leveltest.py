@@ -138,7 +138,15 @@ class GraphicsProgram3D:
     def update(self):
         delta_time = self.clock.tick() / 1000.0
         self.movement=Vector(0,0,0)
-        
+        if self.f_key_down:
+            self.f_key_down = False
+            objs = self.ll.buttons.values()
+            for button in objs:        
+                if button.proximity_test(self.view_matrix.eye):
+                    print(button.id)
+                    p1,p2 = button.press()
+                    self.portalLink.update(button.id, p1, p2)
+                    
         if self.q_key_down:
             self.view_matrix.yaw(delta_time)
             self.GuyRotation+=-delta_time
@@ -148,31 +156,31 @@ class GraphicsProgram3D:
             self.GuyRotation+=delta_time
             
         if self.w_key_down:
-            self.movement+=self.view_matrix.slide(delN=-delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delN=-delta_time*2)
         
         if self.s_key_down:
-            self.movement+=self.view_matrix.slide(delN=delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delN=delta_time*2)
         
         if self.a_key_down:
-            self.movement+=self.view_matrix.slide(delU=-delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delU=-delta_time*2)
         
         if self.d_key_down:
-            self.movement+=self.view_matrix.slide(delU=delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delU=delta_time*2)
         
         if self.movement!=Vector(0,0,0):
-            pass
-            self.maze_collision(self.view_matrix.eye, self.movement)
+            move = self.collision(self.view_matrix.eye, self.movement)
+            self.view_matrix.eye += move
 
 
         self.GuyRotation=self.GuyRotation%(pi*2)
         self.GuyBop += self.movement.__len__()
-        bopSpeed=3
+        """bopSpeed=3
         self.GuyBop= self.GuyBop%(6.28/bopSpeed)
         bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)) 
         self.Guy.reset()
         self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,bopy,self.view_matrix.eye.z))
         if self.perspective_view==0:
-            self.view_matrix.eye.y=bopy+0.5
+            self.view_matrix.eye.y=bopy+0.5"""
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
@@ -201,6 +209,10 @@ class GraphicsProgram3D:
             else:
                 self.BOI.reflect(Vector(0,0,1))
         self.BOI.spinny(delta_time)
+        if self.view_matrix.eye.y < -1:
+            self.view_matrix.eye.x = 3
+            self.view_matrix.eye.z = 3
+            self.view_matrix.eye.y = 0.5
         if self.BOI.kill(self.view_matrix.eye,self.projection_matrix): 
             self.view_matrix.eye.x = 3
             self.view_matrix.eye.z = 3
@@ -355,9 +367,15 @@ class GraphicsProgram3D:
             then use the length to there to check which wall we passed through first
             Returns new vector of how to move after collusion fixes it.
         """
+        """
+            Current bug when walking in corner one can hold press a or d to get themselves into one of the walls on the sides of the corner.
+            may cause the ability to escape could be patched by using the new going vector and checking whether the point ends up inside a wall and if so just set the vector to 0,0,0
+        
+        """
+        FallingSpeed = 0.2
         newVector = Vector(0,0,0)
         pGoing = vector + pNow
-        X,Z = pGoing.x,pGoing.z
+        X,Z,y = pGoing.x,pGoing.z,pGoing.y
         
         if not rad:
             rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
@@ -380,57 +398,59 @@ class GraphicsProgram3D:
         quacko = None
         didcolision=False
         if xtru:
-            q = self.ll.queryLevel(XV,Z)
+            q = self.ll.queryLevel(XV,Z,y)
             if q:
                 #print("Collision x at ",XV,Z,q)
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
                 #pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
-                collided = False
                 didcolision=True
-                if q.portal:
-                    if q.portal.active: print("hecking portal")
-                #for i in q.portals:
-                #    if i.active: 
-                #        self.portalLink.teleport(i)
-                #        print('portal collision')
-                #        collided = True
-                if not collided:
-                    pass #fix vector add to new vector
-                #print("q.pos",q.pos,"pNow.x",pNow.x)        
+                for i in q.portals:
+                    if i.active:
+                        #print("teleport") 
+                        self.portalLink.teleport(i,pNow,self.view_matrix)
+                        return Vector(0,0,0)
+                #print(pGoing.x,q.pos.x,q.size.x )
+                newVector.x += (q.size.x*(-vx)*(0.5) + q.pos.x) + rad*(-vx)-pGoing.x
         if ztru:
-            q = self.ll.queryLevel(X,ZV)
+            q = self.ll.queryLevel(X,ZV,y)
             if q:
                 #print("Collision z at ", X, ZV,q)
-                #print("q.pos",q.pos,"pNow.z",pNow.z)
+                #print("q.pos",q.pos,"pGoing.z",pGoing.z)
                 #fix
-                collided = False
                 didcolision=True
-                if q.portal:
-                    if q.portal.active: print("hecking portal")
-                #for i in q.portals:
-                #    if i.active: 
-                #        self.portalLink.teleport(i)
-                #        print('portal collision')
-                #        collided = True
-                if not collided:
-                    pass #fix vector add to new vector
+                for i in q.portals:
+                    if i.active: 
+                        #print("teleport")
+                        self.portalLink.teleport(i,pNow,self.view_matrix)
+                        return Vector(0,0,0)
+                
+                newVector.z += (q.size.z*(-vz)*(0.5) + q.pos.z) + rad*(-vz)-pGoing.z
+                #print("Vector fix = ",newVector)
     
                 
     
         if not didcolision:
-            q = self.ll.queryLevel(XV,ZV)
+            q = self.ll.queryLevel(XV,ZV,y)
             if q:
-                #print("Collision xz at ", XV, ZV,q)
-                vector.normalize()
-                side = q.pos-pNow + (vector*rad)
-                if not quacko:
-                    quacko = q
-                if side.x >= side.z:
-                    pass
-                else:
-                    pass
+                
+                newVector += Vector(sqrt(pow((q.size.x*(-vx)*(0.5) + q.pos.x) + rad*(-vx)-pGoing.x,2)),0,sqrt(pow((q.size.z*(-vz)*(0.5) + q.pos.z) +rad*(-vz)-pGoing.z,2)))
                 didcolision = True
-        if not didcolision: return vector
+                #print("spicy collision ",newVector)
+        newVector += vector
+        pGoing = pNow +newVector
+        pGoing.y += -FallingSpeed
+        #now for falling here
+        #print(y,pGoing.y)
+        notq = self.ll.queryLevel(pGoing.x,pGoing.z,y)
+        q = self.ll.queryLevel(pGoing.x,pGoing.z,pGoing.y-0.5)
+        if not q:
+            newVector.y += - FallingSpeed
+
+        #special object collision goes here
+        
+        if not didcolision: 
+            return newVector
+        #print(newVector)
         return newVector
 
     def maze_collision(self,pNow,vector, rad = 0):

@@ -153,15 +153,35 @@ class Button:
         self.xpos = self.cordCalcs(button_dict["box-x"],xSize,button_dict['placement']["x-offset"])
         self.ypos = button_dict["box-y"]*ySize+self.height/2
         self.zpos = self.cordCalcs(button_dict["box-z"],zSize,button_dict['placement']["z-offset"])
+        self.point = (self.xpos,self.ypos,self.zpos)
         self.actions = button_dict['action']
         self.colors = button_dict['color']
         self.pillar = GraphicalObject(Cube(),size = (buttonsize,self.height,buttonsize),pos=(self.xpos,self.ypos,self.zpos),color=(0.5,0.2,0.5))
         self.button = GraphicalObject(Cube(),size=(buttonsize*0.7,0.045,buttonsize*0.7),pos=(self.xpos,self.ypos+self.height/2,self.zpos),color=(0.1,0.6,0.6),rotation=(0,45,0) )
+        self.proxMargin = 0.5
+        self.state = -1
+        self.colorState = -1
         #print(button_dict["box-x"],button_dict["box-y"],button_dict["box-z"])
         #print(self.xpos,self.ypos,self.zpos)
-
+    def proximity_test(self,p):
+        """if p - pos length is within the margins defined by the button return true"""
+        x,y,z = self.xpos,self.ypos,self.zpos
+        v = Vector(-x,-y,-z)+p
+        if(v.__len__()<self.proxMargin): return True
+        return False
     def press(self):
-        pass
+        if self.state == -1: 
+            self.state = 0
+            self.colorState = 0
+        else: 
+            self.state +=1
+            self.colorState +=1
+            if self.state == len(self.actions): self.state = 0
+            if self.colorState == len(self.colors): self.colorState = 0
+        #print(self.colorState,len(self.colors))
+        self.button.color = self.colors[self.colorState]
+        return self.actions[self.state]
+        
     def nullState(self):
         pass
     def draw(self,shader):
@@ -291,11 +311,22 @@ class PortalLink:
         self.p2.active = False
         self.p1 = None
         self.p2 = None
-    def teleport(self,inportal):
+    def teleport(self,inPortal,toPort,matrix):
         """
             use the input portal to return the new position of the object
         """
-        pass
+        if self.p1 and self.p2:
+            if self.p1.id == inPortal.id: outPortal = self.p2
+            else: outPortal = self.p1
+            #print(inPortal.id,outPortal.id)
+            toPort.x = outPortal.xpos
+            toPort.y = outPortal.ypos
+            toPort.z = outPortal.zpos
+            x,y,z = outPortal.direction
+            look = Vector(outPortal.xpos,outPortal.ypos,outPortal.zpos)+Vector(x,y,z)
+            a,b,c = outPortal.up
+            matrix.look(look,Vector(a,b,c))
+        else: print("Bro portals aint got no conenctions right now")
 
 
 

@@ -104,6 +104,7 @@ class GraphicsProgram3D:
         self.ll.load("buttons",tile_tex,rand_spec_tex)
         self.portalLink = PortalLink(self.ll,f1,t1,f2,t2)
         self.portalLink.update("reset","1","2")
+        self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
 
 
 
@@ -126,6 +127,7 @@ class GraphicsProgram3D:
         lava_tex1 = get_texture("lava-texture1.jpg")
         lava_tex2 = get_texture("lava-texture2.jpg")
         self.ll.createLava(lava_tex1,lava_tex2)
+        
 
         self.clock = pygame.time.Clock()
         self.clock.tick()
@@ -133,6 +135,7 @@ class GraphicsProgram3D:
         self.perspective_max=2
         self.perspective_view=0
         self.map_on=False
+        self.FBO_on=False
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -241,7 +244,9 @@ class GraphicsProgram3D:
         
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
-        self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
+        if self.FBOon:
+            self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
+        
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
 
@@ -300,6 +305,8 @@ class GraphicsProgram3D:
                         self.perspective_view = (self.perspective_view+1)%self.perspective_max 
                     if event.key == K_m:
                         self.map_on=(not self.map_on)
+                    if event.key == K_p:
+                        self.FBO_on=(not self.FBO_on)
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 

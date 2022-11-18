@@ -294,6 +294,8 @@ class PortalLink:
         self.p1.active = True
         self.p2 = self.ll.portals[p2_Id]
         self.p2.active = True
+        self.p1.portal.color=Color(1, 0.5, 0, 1)
+        self.p2.portal.color=Color(0, 0.5, 1, 1)
         
         
     def clear(self):
@@ -326,26 +328,32 @@ class PortalLink:
                 
                 veiw1 = viewMatrixObj.copy()
                 veiw2 = viewMatrixObj.copy()
+
                 self.p1.portal.color=Color(1,1,1)
                 self.p2.portal.color=Color(1,1,1)
+
                 d1x,d1y,d1z = self.p1.direction
                 d2x,d2y,d2z = self.p2.direction
+
                 d1 = Vector(d1x,d1y,d1z)
                 d2 = Vector(d2x,d2y,d2z)
+
                 rot=self.gibRot(d1,d2)
 
-                p1v=Vector(self.p1.xpos,self.p1.ypos,self.p1.zpos)
-                p2v=Vector(self.p2.xpos,self.p2.ypos,self.p2.zpos)
+                p1v=Vector(self.p1.xpos,0,self.p1.zpos)
+                p2v=Vector(self.p2.xpos,0,self.p2.zpos)
+
                 v1=((p1v*(-1))+viewMatrixObj.eye)
                 v2=((p2v*(-1))+viewMatrixObj.eye)
 
                 vv1=Vector(v1.x*cos(rot) -v1.z*sin(rot) ,v1.y,v1.x*sin(rot) +v1.z*cos(rot))
-                rot2=rot
+                rot2=-rot
                 vv2=Vector(v2.x*cos(rot) -v2.z*sin(rot) ,v2.y,v2.x*sin(rot) +v2.z*cos(rot))
                 n=viewMatrixObj.n
                 nn =Vector(n.x*cos(rot) -n.z*sin(rot) ,n.y,v2.x*sin(rot) +n.z*cos(rot))
-                veiw1.eye=veiw1.eye+vv1
-                veiw2.eye=veiw2.eye+vv2
+
+                veiw1.eye=veiw1.eye+vv2
+                veiw2.eye=veiw2.eye+vv1
                 u1x,u1y,u1z = self.p1.up
                 veiw1.look(veiw1.eye-nn,Vector(u1x,-u1y,u1z))
                 #veiw1.look(p1v,Vector(u1x,-u1y,u1z))

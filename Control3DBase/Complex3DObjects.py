@@ -10,7 +10,8 @@ from math import *
 from Matrices import *
 
 def lerp(a,b,t):
-    return (1-t)*a+t*b
+    t=max(0,min(t,1))
+    return a*(1-t)+b*t
 
 class GraphicalObject:
     def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =Color(0.6,0.6,0.6) ):
@@ -31,7 +32,7 @@ class GraphicalObject:
         self.texture=None
         self.spectexture=None
 
-    def draw(self, shader):
+    def draw(self, shader,skipSides=[]):
         if self.texture != None:
             glActiveTexture(GL_TEXTURE1)
             glBindTexture(GL_TEXTURE_2D,self.texture)
@@ -54,7 +55,10 @@ class GraphicalObject:
         shader.set_material_diffuse(r*rd,g*gd,b*bd)
         shader.set_material_specular(r*rs,g*gs,b*bs, self.shiny)
         shader.set_material_ambient(r*ra,g*ga,b*ba)
-        self.object.draw(shader)
+        if skipSides:
+            self.object.draw(shader,skipSides)
+        else:
+            self.object.draw(shader)
         
     def update(self, size = 0 ,pos = 0, rotation =0, color =0):
         if color: self.color = color 
@@ -178,10 +182,17 @@ class Portal:
         self.xpos = x*xSize+xSize/2 + xd*(xSize+offset)/2
         self.ypos = (y-1)*ySize+ySize/2+ yd*(ySize+offset)/2
         self.zpos = z*zSize+zSize/2 + zd*(zSize+offset)/2
-        print(self.xpos,self.ypos,self.zpos)
+        #print(self.xpos,self.ypos,self.zpos)
         rot = (r*xd,0,r)
         if yd != 0: rot = (2*r,0,0)
-        self.portal = GraphicalObject(Plane(),size=(xSize,ySize,zSize),pos=(self.xpos,self.ypos,self.zpos),color=(0,0,1), rotation=rot)    
+        self.portal = GraphicalObject(Plane(),size=(xSize,ySize,zSize),pos=(self.xpos,self.ypos,self.zpos),color=(0,0,1), rotation=rot)  
+        c=Cube()
+        f=-1
+        for i in range(6):
+            #print(c.normal_array[i*3*4:i*3*4+3])
+            if self.direction == c.normal_array[i*3*4:i*3*4+3]:
+                f=i
+        self.face=f  
 
     def draw(self,shader):
         if self.active:
@@ -190,9 +201,70 @@ class Portal:
         self.portal.color = color
 
 class SmallWall:
-    def __init__(self,id, smallWallDict,xSize,ySize,zSize):
-        pass
+    def __init__(self,id, smallWallDict,xSize,ySize,zSize,pillarcount=3,barcount=1,Smaller=0.2,barUpSmaller=0.1):
+        self.id = id
+        SizeV=Vector(xSize,ySize,zSize)
+        BoxPos=Point(smallWallDict["location"]["box-x"],smallWallDict["location"]["box-y"],smallWallDict["location"]["box-z"])
+        posDir=Vector(smallWallDict["location"]["direction"][0]*xSize,smallWallDict["location"]["direction"][1]*ySize,smallWallDict["location"]["direction"][2]*zSize)
+        PosSize=posDir.axWiseMult(SizeV)
+        PosSizeHalf=PosSize*0.5
+        self.pos = Point(BoxPos.x*xSize + xSize/2+PosSizeHalf.x,(BoxPos.y-1)*ySize + ySize/2+PosSizeHalf.y,BoxPos.z*zSize+zSize/2++PosSizeHalf.z)
+
+        upDir=Vector(smallWallDict["location"]["up"][0],smallWallDict["location"]["up"][1],smallWallDict["location"]["up"][2])
+        colliSize=[]
+        pillaSize=[]
+        bar__Size=[]
+        Sizes=SizeV.list()
+        smallSize=(SizeV*Smaller).list()
+        for i in range(len(smallWallDict["location"]["direction"])):
+            d=smallWallDict["location"]["direction"][i]
+            u=smallWallDict["location"]["up"][i]
+            
+            if d == 0:
+                if u!=0:
+                    bar__Size.append(Sizes[i]*barUpSmaller)
+                    pillaSize.append(Sizes[i])
+                else:
+                    bar__Size.append(Sizes[i])
+                    pillaSize.append(sqrt(2*((smallSize[i]*0.5)**2)))#will not be good if x!=z
+                colliSize.append(Sizes[i])
+                
+            else:
+                pillaSize.append(sqrt(2*((smallSize[i]*0.5)**2)))#will not be good if x!=z
+                bar__Size.append(smallSize[i])
+                colliSize.append(smallSize[i])
+
+        self.collisionCube= GraphicalObject(Cube(),colliSize,pos = (self.pos.x,self.pos.y,self.pos.z))
+        self.DrawObjects=[]
+        upDir.normalize()
+        
+        sideDir = ((upDir.normalize(True)+posDir.normalize(True))*(-1)+Vector(1,1,1)).normalize(True)
+        sideSize = sideDir.axWiseMult(SizeV)
+        for i in range(pillarcount):
+            rot=upDir*(pi/4)
+            
+            p=Vector(self.pos.x,self.pos.y,self.pos.z)+sideSize*(-0.5)
+            sideSmall = sideSize*Smaller
+            ler=lerp(sideSize+sideSmall*(-1),Vector(0,0,0),(i/pillarcount))
+            print(p,ler,sideSize,(i/pillarcount))
+            p=ler+p#+sideSmall
+            G=GraphicalObject(Cube(),pillaSize,pos =p.list() )
+            G.model_matrix.add_rotation(rot.x,rot.y,rot.z)
+            self.DrawObjects.append(G)
+            pass
+        for i in range(barcount):
+            
+
+            G=GraphicalObject(Cube(),bar__Size,pos = (self.pos.x,self.pos.y,self.pos.z))
+            self.DrawObjects.append(G)
+            pass
+
+
     def draw(self,shader):
+        
+        #self.collisionCube.draw(shader)
+        for o in self.DrawObjects:
+            o.draw(shader)
         pass
 
 class PortalLink:
@@ -219,3 +291,10 @@ class PortalLink:
         self.p2.active = False
         self.p1 = None
         self.p2 = None
+
+
+
+if __name__ == "__main__":
+    from leveltest import *
+    GraphicsProgram3D().start() 
+                    

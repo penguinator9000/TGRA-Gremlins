@@ -104,11 +104,20 @@
     "smallWalls":{
         "1":{
             "location":{
-                "box-z":10,
-                "box-x":0,
+                "box-z":8,
+                "box-x":10,
                 "box-y":1,
-                "direction":[1,0,0],
+                "direction":[0,0,1],"dirComment":"use the x,y,z form and only use one 1 (or -1) all others should be 0",
                 "up":[0,1,0]
+            }
+        },
+        "2":{
+            "location":{
+                "box-z":8,
+                "box-x":9,
+                "box-y":1,
+                "direction":[0,0,1],"dirComment":"use the x,y,z form and only use one 1 (or -1) all others should be 0",
+                "up":[0,1,0],"upComment":"use the x,y,z form and only use one 1 (or -1) all others should be 0 and cant be the same as direction"
             }
         }
     }

@@ -489,17 +489,13 @@ class GraphicsProgram3D:
                     
                     if outX and outZ:
                         if i.posDir.x:
-                            pGO.x = swV.x -vx*rad 
+                            newVector.x += swV.x -vx*rad -pGoing.x
                         else:
-                            pGO.z = swV.z -vx*rad  
+                            newVector.z += swV.z -vx*rad -pGoing.z
                     elif outZ:
-                        pGO.z = swV.z -vx*rad  
+                        newVector.z += swV.z -vx*rad  -pGoing.z
                     elif outX:
-                        pGO.x = swV.x -vx*rad
-                    
-                    newVector += pGO-pGoing
-                    print(pGO)
-                    print(newVector)
+                        newVector.x += swV.x -vx*rad-pGoing.x
 
                         
 

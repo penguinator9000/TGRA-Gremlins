@@ -465,16 +465,10 @@ class GraphicsProgram3D:
             for i in q:
                 if i.type == "sw":
                     swcc = i.collisionCube
-                    bigV, smallV = (swcc.size*(0.5)+swcc.pos, swcc.size*(-0.5)+swcc.pos)
                     swV=Vector(0,0,0)
-                    if abs(bigV.x-pNow.x)< abs(smallV.x-pNow.x):
-                        swV.x=bigV.x
-                    else:
-                        swV.z=smallV.z
-                    if abs(bigV.z-pNow.z)< abs(smallV.z-pNow.z):
-                        swV.z=bigV.z
-                    else:
-                        swV.z=smallV.z
+                    print("swcc.size",swcc.size)
+                    swV.z = swcc.size.z*(-vz)*(0.5) + swcc.pos.z
+                    swV.x = swcc.size.x*(-vx)*(0.5) + swcc.pos.x
 
                     #inX =( bigV.x > XV and XV > smallV.x)
                     outX=False
@@ -485,17 +479,19 @@ class GraphicsProgram3D:
                     outZ=False
                     if vz == 1: outZ =( swV.z < ZV)
                     elif vz == -1: outZ =( swV.z > ZV)
-                    
+                    print("going x",pGoing.x)
+                    print(swV.x)
+                    print(newVector)
                     if outX and outZ:
                         if i.posDir.x:
-                            newVector.x += swV.x -vx*rad -pGoing.x
+                            newVector.x += swV.x +(vx)*rad -pGoing.x
                         else:
-                            newVector.z += swV.z -vx*rad -pGoing.z
+                            newVector.z += swV.z +(vx)*rad -pGoing.z
                     elif outZ:
-                        newVector.z += swV.z -vx*rad  -pGoing.z
+                        newVector.z += swV.z+ (vx)*rad  -pGoing.z
                     elif outX:
-                        newVector.x += swV.x -vx*rad-pGoing.x
-
+                        newVector.x += swV.x +(vx)*rad-pGoing.x
+                    print(newVector)
                         
 
                     

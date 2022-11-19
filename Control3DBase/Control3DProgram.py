@@ -1,19 +1,25 @@
+
 # from OpenGL.GL import *
 # from OpenGL.GLU import *
-
+from ctypes import pointer
 from math import *
-
+from msilib.schema import Class
+from shutil import move
+from turtle import Screen, color, pos, position
 import random
 
 import pygame
 from pygame.locals import *
 
+from levelloader import LevelLoader
 import sys
 import time
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+PORTAL_TEXTURE_FIDIELLTY=300
 from Shaders import *
 from Matrices import *
+from Complex3DObjects import *
 
 MAZE_Max=17
 MAZE_ofset=1
@@ -21,131 +27,6 @@ MAZE_ofset=1
 import csv
 global WIN
 WIN=False
-
-
-class GraphicalObject:
-    def __init__(self, shape, size = (1,1,1),pos = (0,0,0), rotation =(0,0,0), color =Color(0.6,0.6,0.6) ):
-        self.object = shape
-        self.model_matrix = ModelMatrix()
-        self.model_matrix.load_identity()
-        self.model_matrix.add_translation(pos[0],pos[1],pos[2])
-        self.model_matrix.add_scale(size[0],size[1],size[2])
-        self.model_matrix.add_rotation(rotation[0],rotation[1],rotation[2])
-        self.model_matrix.push_matrix()
-        self.color = color
-        self.pos=Point(pos[0],pos[1],pos[2])
-        self.size=Vector(size[0],size[1],size[2])
-        self.diffuse = Color(1,1,1)
-        self.ambiance = Color(0.5,0.5,0.5)
-        self.specular = Color(0.5,0.5,0.5)
-        self.shiny = 1
-        self.texture=None
-        self.spectexture=None
-
-    def draw(self, shader):
-        if self.texture != None:
-            glActiveTexture(GL_TEXTURE1)
-            glBindTexture(GL_TEXTURE_2D,self.texture)
-            shader.set_material_texture(1)
-        else:
-            shader.set_material_texture(0)
-        if self.spectexture != None:
-            glActiveTexture(GL_TEXTURE2)
-            glBindTexture(GL_TEXTURE_2D,self.spectexture)
-            shader.set_material_specular_texture(2)
-        else:
-            shader.set_material_specular_texture(0)
-        
-            
-        r,g,b = self.color
-        rd,gd,bd = self.diffuse
-        ra,ga,ba = self.ambiance
-        rs,gs,bs = self.specular
-        shader.set_model_matrix(self.model_matrix.matrix)
-        shader.set_material_diffuse(r*rd,g*gd,b*bd)
-        shader.set_material_specular(r*rs,g*gs,b*bs, self.shiny)
-        shader.set_material_ambient(r*ra,g*ga,b*ba)
-        self.object.draw(shader)
-        
-    def update(self, size = 0 ,pos = 0, rotation =0, color =0):
-        if color: self.color = color 
-        if pos:
-            self.model_matrix.add_translation(pos[0],pos[1],pos[2])
-            self.pos+=Point(pos[0]*self.size.x,pos[1]*self.size.y,pos[2]*self.size.z)
-        if size:
-            self.model_matrix.add_scale(size[0],size[1],size[2])
-            self.size=Point(self.size.x*size[0],self.size.y*size[1],self.size.z*size[2])
-        if rotation:
-            self.model_matrix.add_rotation(rotation[0],rotation[1],rotation[2])
-    def reset(self):
-        self.model_matrix.pop_matrix()
-        self.model_matrix.push_matrix()
-    def copy(self):
-        cpy = GraphicalObject(self.object,color=Color(self.color[0],self.color[1],self.color[2]))
-        cpy.model_matrix.matrix = self.model_matrix.copy_matrix()
-        cpy.ambiance = self.ambiance
-        cpy.diffuse = self.diffuse
-        cpy.specular = self.specular
-        cpy.shiny = self.shiny
-        return cpy
-
-
-# class GOPortals:#nvm
-#     def __init__(self):
-#         self.yRotation=0
-#         self.view_matrix=ViewMatrix()
-#         self.projection_matrix=ProjectionMatrix()
-#         self.pos=Point(0,0,0)
-#     def set_view_matrix(self,playerVM):
-#         self.view_matrix.eye = playerVM.eye-self.pos
-        
-          
-
-class BOI(GraphicalObject):
-    boingPlaces = Vector(1,0,1)
-    radius = Vector(0.25,0.25,0.25).__len__()
-    spins = Vector(1,1.2,1.1)
-    comboSpins = Vector(0,0,0)
-    rgb =Color(0,0,0)
-    def spinny(self, dtime):
-        self.comboSpins += self.spins*dtime 
-        sinComSpin = Vector(sin(self.comboSpins.x),sin(self.comboSpins.y),sin(self.comboSpins.z))
-        self.model_matrix.add_rotation(sinComSpin.x,sinComSpin.y,sinComSpin.z)
-        sinComSpin2 = Vector((sinComSpin.x+1)/2,(sinComSpin.y+1)/2,(sinComSpin.z+1)/2)
-
-        self.diffuse  =Color(sinComSpin2.x,sinComSpin2.y,sinComSpin2.z)
-        self.ambiance =Color(sinComSpin2.y,sinComSpin2.z,sinComSpin2.x)
-        self.specular =Color(sinComSpin2.z,sinComSpin2.x,sinComSpin2.y)
-
-        self.color = (1,1,1)
-    def kill(self, playerPos, proj):
-        diff =  playerPos - self.pos
-        if diff.__len__() <  Vector(proj.near,proj.top,proj.right).__len__():
-            return True
-        return False     
-    def move(self, dtime):
-        moves = self.boingPlaces*dtime
-        newpos = self.pos+moves
-        self.moveTo(newpos.x,newpos.z)
-        return moves
-    def moveTo(self, x,z):
-        self.reset()
-        self.model_matrix.add_translation(x*2,0.25,z*2)
-        self.pos = Point(x,0.5,z)
-    def randomstart(self,qman):
-        x = randint(3,31)
-        z = randint(3,31)
-        if qman.query_maze(int(x//2),int(z//2)):
-            return self.moveTo(x,z)
-        self.randomstart(qman)
-    def reflect(self,mirVec):
-        perpMirVec = Vector(-mirVec.z,0,mirVec.x)
-        perpMirVec.normalize() #^n
-        dot = self.boingPlaces.dot(perpMirVec)
-        #vec = a
-        self.boingPlaces.x =self.boingPlaces.x-2*dot*perpMirVec.x
-        self.boingPlaces.z =self.boingPlaces.z-2*dot*perpMirVec.z
-
 def get_texture(name):
     surface = pygame.image.load(sys.path[0]+"/"+name)
     tex_string= pygame.image.tostring(surface,"RGBA",1)
@@ -162,9 +43,21 @@ def get_texture(name):
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,width,height,0,GL_RGBA,GL_UNSIGNED_BYTE,tex_string)
     return tex_id
 
+def FBO(Fidellity):
+    fbo = GLuint()
+    glGenFramebuffers(1, fbo)
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo)
+
+    tex_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, tex_id)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, Fidellity, Fidellity, 0, GL_RGB, GL_UNSIGNED_BYTE, None)
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0)
+    return fbo,tex_id
+
 class GraphicsProgram3D:
     def __init__(self):
-
         pygame.init() 
         pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT), pygame.OPENGL|pygame.DOUBLEBUF)
 
@@ -172,20 +65,19 @@ class GraphicsProgram3D:
         self.shader.use()
         self.shader.set_global_ambiance(0.4,0.4,0.4)
 
-        # self.model_matrix = ModelMatrix()
-        # self.model_matrix.load_identity()
-        # self.model_matrix.push_matrix()
 
         self.projection_matrix = ProjectionMatrix()
-        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.25,F=50)
-        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 100, ambiance=Color(0.2,0.2,0.2))
-        self.light2 = Light(Point(2,2,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0.8,0.8),reach = 10)
-        #self.projection_matrix.set_orthographic(-2, 2, -2, 2, 0.5, 30)
-        
+        self.projection_matrix.set_perspective(fov=120,aspect=(SCREEN_WIDTH/SCREEN_HEIGHT),N=0.1,F=50)
+        self.light1 = Light(Point(6,10,6),Color(0.9,0.9,0.9),reach= 9, ambiance=Color(0.2,0.2,0.2))
+        self.light2 = Light(Point(2,1,2),diffuse=Color(0.5,0,0), ambiance=Color(0.1,0.1,0.1),specular=Color(0.8,0,0.8),reach = 5)
+        self.light3 = Light(Point(8,3,10),Color(0.7,0.7,0.7),reach= 6, ambiance=Color(0.2,0.2,0))
+        self.light4 = Light(Point(2,2,15),diffuse=Color(0.5,0.5,0), ambiance=Color(0.1,0.1,0.1),reach = 5)
+
+        self.StartPos=Point(2.5,1,2)
+
         self.view_matrix = ViewMatrix()
-        #self.projection_view_matrix.new_proj_view((0,0,0),self.projection_matrix, self.view_matrix)
         self.view_matrix.look(Point(0,0,-1),Vector(0,1,0))
-        self.view_matrix.eye=Point(2+MAZE_ofset,0.5,2+MAZE_ofset)
+        self.view_matrix.eye=self.StartPos
         self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
 
@@ -199,33 +91,29 @@ class GraphicsProgram3D:
         self.mini_map_view_matrix = ViewMatrix()
         self.mini_map_view_matrix.eye = Point(2+MAZE_ofset,3,2+MAZE_ofset)
         self.mini_map_view_matrix.look(self.view_matrix.eye,self.view_matrix.n)
-        
+
         self.nullTexture = get_texture("white.png")
         
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
         
         tile_tex=get_texture("A2x2tileWhiteMarble.jpg")
-        rand_spec_tex=get_texture("A-Java-G.png")
+        rand_spec_tex=tile_tex
         
-        
+        f1,t1 = FBO(PORTAL_TEXTURE_FIDIELLTY)
+        f2,t2 = FBO(PORTAL_TEXTURE_FIDIELLTY)
 
         c = Cube()
-        self.maze=[[None for i in range(MAZE_Max+1)] for ii in range(MAZE_Max+1)]
-        self.mazeObjects =[]
-        y_offset= -3
-        with open(sys.path[0] + "/maze.csv", 'r') as file:
-            csvreader = csv.reader(file)
-            first = True
-            for row in csvreader:
-                if first: first = False
-                else:
-                    x,z = [(int(val)) for val in row]
-                    box = GraphicalObject(c,pos=(x*2+MAZE_ofset,1+y_offset,z*2+MAZE_ofset),size=(2,3,2),color=Color((x)/MAZE_Max,1-min(1,((x)/MAZE_Max+(z)/MAZE_Max)),(z)/MAZE_Max))
-                    box.texture = tile_tex
-                    box.spectexture=rand_spec_tex
-                    self.mazeObjects.append(box)
-                    self.maze[x][z]=box
+        self.ll = LevelLoader(sys.path[0]+"/levels")
+        self.ll.load("buttons",tile_tex,rand_spec_tex)
+        self.portalLink = PortalLink(self.ll,f1,t1,f2,t2)
+        self.portalLink.update("reset","1","2")
+        self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
+        self.portalLink.update("reset","1","2")
+        
+
+
+
 
         self.Guy= GraphicalObject(D8(),color=Color(0,0.5,1))
         self.Guy.ambiance = Color(0.7,0.7,0.7)
@@ -237,38 +125,20 @@ class GraphicsProgram3D:
         initialroatate = pi*1.25
         self.view_matrix.yaw(initialroatate)
         self.Guy.update(rotation=(0,-initialroatate,0))
-        self.BOI = BOI(c,size=(0.5,0.5,0.5), color = Color(0.9,0.6,0.6))
-        self.BOI.randomstart(self)
-        self.objects.append(self.BOI)
 
         lava_tex1 = get_texture("lava-texture1.jpg")
         lava_tex2 = get_texture("lava-texture2.jpg")
-
-        B=BayesianCurve4P(p1 = Point(0, 0, 1), p2 = Point(0, 1, 0), p3 = Point(1, 1, 1), p4 = Point(1, 0, 0))
+        self.ll.createLava(lava_tex1,lava_tex2)
         
-        L=LoopBayesianCurves4P(B,8)
-        
-        L.BuildFromControle()
-        self.lavaTest=Lava(L,15,15,Point(0,-4,0),Point(30,-1,30),Color(1,0,0),Color(0.5,0.5,0),5,5,30,273.272,texture=lava_tex1,spectexture=lava_tex2)
-        # lava_y_offsett=-3.75
 
-        # lavaTest=Mesh(30,30,Point(15,-9000,15),Color(1,0,0),"1","triangle")
-        # N,M = lavaTest.nm
-        # lavaTest.PointMatrix=[[Point(m,L[m/3+n/2].y/1.25+lava_y_offsett, n) for m in range(M) ] for n in range(N)]
-        # lavaTest.texture=tile_tex
-        
-        self.objects.append(self.lavaTest)
-
-        '''
-        for i in range(20):
-            self.objects.append(GraphicalObject(c,pos=(i-(i%2),0,i-((i+1)%2)),size=(1,3,1)))
-        '''
         self.clock = pygame.time.Clock()
         self.clock.tick()
 
         self.perspective_max=2
         self.perspective_view=0
         self.map_on=False
+        self.FBO_on=False
+        self.lava_on=True
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -286,13 +156,19 @@ class GraphicsProgram3D:
         self.r_key_down = False
         self.f_key_down = False
 
-        
-
 
     def update(self):
         delta_time = self.clock.tick() / 1000.0
         self.movement=Vector(0,0,0)
-        
+        if self.f_key_down:
+            self.f_key_down = False
+            objs = self.ll.buttons.values()
+            for button in objs:        
+                if button.proximity_test(self.view_matrix.eye):
+                    print(button.id)
+                    p1,p2 = button.press()
+                    self.portalLink.update(button.id, p1, p2)
+                    
         if self.q_key_down:
             self.view_matrix.yaw(delta_time)
             self.GuyRotation+=-delta_time
@@ -302,30 +178,31 @@ class GraphicsProgram3D:
             self.GuyRotation+=delta_time
             
         if self.w_key_down:
-            self.movement+=self.view_matrix.slide(delN=-delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delN=-delta_time*2)
         
         if self.s_key_down:
-            self.movement+=self.view_matrix.slide(delN=delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delN=delta_time*2)
         
         if self.a_key_down:
-            self.movement+=self.view_matrix.slide(delU=-delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delU=-delta_time*2)
         
         if self.d_key_down:
-            self.movement+=self.view_matrix.slide(delU=delta_time*2)
+            self.movement+=self.view_matrix.calculateMovementVector(delU=delta_time*2)
         
-        if self.movement!=Vector(0,0,0):
-            self.maze_collision(self.view_matrix.eye, self.movement)
+        
+        move = self.collision(self.view_matrix.eye, self.movement)
+        self.view_matrix.eye += move
 
 
         self.GuyRotation=self.GuyRotation%(pi*2)
         self.GuyBop += self.movement.__len__()
-        bopSpeed=3
+        """bopSpeed=3
         self.GuyBop= self.GuyBop%(6.28/bopSpeed)
         bopy = (sin(self.GuyBop*bopSpeed-sin(self.GuyBop*bopSpeed/2))+1)/(16/(self.perspective_view+1)) 
         self.Guy.reset()
         self.Guy.update(rotation=(0,self.GuyRotation,0),pos=(self.view_matrix.eye.x,bopy,self.view_matrix.eye.z))
         if self.perspective_view==0:
-            self.view_matrix.eye.y=bopy+0.5
+            self.view_matrix.eye.y=bopy+0.5"""
         self.mini_map_view_matrix.eye=self.view_matrix.eye
         self.mini_map_view_matrix.slide(delN=0.5)
         self.mini_map_view_matrix.look(self.view_matrix.eye,(self.view_matrix.n*(-1)))
@@ -339,34 +216,17 @@ class GraphicsProgram3D:
 
         self.light1.pos= Point( self.view_matrix.eye.x ,self.view_matrix.eye.y+2 ,self.view_matrix.eye.z)
 
-        boiWentVec = self.BOI.move(delta_time)
-        collided = self.maze_collision(self.BOI.pos,boiWentVec,self.BOI.radius)
-        #print(self.BOI.pos)
-        if collided:
-            self.BOI.moveTo(self.BOI.pos.x,self.BOI.pos.z)
-            boiWentVec.normalize()
-            # side = q.pos-pNow + (vector*rad)
-            #print(collided.pos)
-            side = collided.pos-self.BOI.pos + (boiWentVec*self.BOI.radius)
-            if abs(side.x) < abs(side.z):
-                self.BOI.reflect(Vector(1,0,0))
-                #print("x",self.BOI.boingPlaces,side)
-            else:
-                self.BOI.reflect(Vector(0,0,1))
-        self.BOI.spinny(delta_time)
-        if self.BOI.kill(self.view_matrix.eye,self.projection_matrix): 
-            self.view_matrix.eye.x = 3
-            self.view_matrix.eye.z = 3
-            pass
-        if self.query_maze(int(self.BOI.pos.x//2),int(self.BOI.pos.z//2)) == 0:
-            self.BOI.randomstart(self)
-        if self.query_maze(int(self.view_matrix.eye.x//2),int(self.view_matrix.eye.z//2)) == 0:
+        
+        if self.view_matrix.eye.y < -1:
+            self.view_matrix.eye = self.StartPos
+            
+        if self.ll.queryLevel(int(self.view_matrix.eye.x),int(self.view_matrix.eye.z)) == 0:
             global WIN
             WIN=True
             return True
-        self.light2.pos= Point( self.BOI.pos.x,self.BOI.pos.y+0.5,self.BOI.pos.z)
 
-        self.lavaTest.update(delta_time)
+        if self.lava_on:
+            self.ll.lava.update(delta_time)
 
         return False 
         
@@ -377,44 +237,46 @@ class GraphicsProgram3D:
         
         glClearColor(0.05, 0.0, 0.1, 1.0)
         glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)  ### --- YOU CAN ALSO CLEAR ONLY THE COLOR OR ONLY THE DEPTH --- ###
+        if self.FBO_on:
+            self.portalLink.portalTexturUpdate(self.shader,self.view_matrix,self.projection_matrix,[])
         
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D,self.nullTexture)
 
-        self.shader.set_lights([self.light1,self.light2])
+        
+        self.shader.set_lights([self.light1,self.light2,self.light3,self.light4])
 
         if self.map_on:
             glViewport(int(SCREEN_WIDTH-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT-SCREEN_HEIGHT/4)-5, int(SCREEN_HEIGHT/4), int(SCREEN_HEIGHT/4))
+
             self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
             self.shader.set_projection_matrix(self.mini_map_projection_matrix.get_matrix())
-            
 
             for obj in self.objects:
                 obj.draw(self.shader)
-            for obj in self.mazeObjects:
-                obj.draw(self.shader)
+            self.ll.draw(self.shader)
+            #for obj in self.mazeObjects:
+            #    obj.draw(self.shader)
             self.Guy2.draw(self.shader)
             self.Guy.draw(self.shader)
         
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT)
         if self.perspective_view == 1:
             self.shader.set_view_matrix(self.view_matrix_3P.get_matrix(),self.view_matrix_3P.eye)
-            
+            self.Guy.draw(self.shader)
+            self.Guy2.draw(self.shader)
         elif self.perspective_view==2:
             self.shader.set_view_matrix(self.mini_map_view_matrix.get_matrix(),self.mini_map_view_matrix.eye)
+            self.Guy.draw(self.shader)
+            self.Guy2.draw(self.shader)
         else:
             self.shader.set_view_matrix(self.view_matrix.get_matrix(),self.view_matrix.eye)
             
         self.shader.set_projection_matrix(self.projection_matrix.get_matrix())
-        
-        if self.perspective_view!=0:
-            self.Guy.draw(self.shader)
-            self.Guy2.draw(self.shader)
 
         for obj in self.objects:
             obj.draw(self.shader)
-        for obj in self.mazeObjects:
-            obj.draw(self.shader)
+        self.ll.draw(self.shader)
        
         pygame.display.flip()
         
@@ -436,6 +298,10 @@ class GraphicsProgram3D:
                         self.perspective_view = (self.perspective_view+1)%self.perspective_max 
                     if event.key == K_m:
                         self.map_on=(not self.map_on)
+                    if event.key == K_p:
+                        self.FBO_on=(not self.FBO_on)
+                    if event.key == K_l:
+                        self.lava_on=(not self.lava_on)
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 
@@ -497,20 +363,25 @@ class GraphicsProgram3D:
         self.program_loop()
     
     def query_maze(self,x,z):
-
         R=range(0,MAZE_Max+1)
         if x in R and z in R:
-            return self.maze[x][z]
+            pass
+            #return self.maze[x][z]
         else:
             return 0
-    
-    def maze_collision(self,pNow,vector, rad = 0):
-        return None
-        """The point is were you want to be vector is how you got there"""
-        pWas = pNow+(vector*(-1))
-        X= int(pWas.x//2)
-        Z= int(pWas.z//2)
-        #leeway = 0.25
+    def collision(self,pNow, vector, rad=0,square = False):
+        """
+            Take in the current position and vector that will be moved after,
+            uses the vector to check where it will end up and checks collision on that location
+            use lerp to find where we passed through a wall and 
+            then use the length to there to check which wall we passed through first
+            Returns new vector of how to move after collusion fixes it.
+        """
+        FallingSpeed = 0.2
+        newVector = Vector(0,0,0)
+        pGoing = vector + pNow
+        X,Z,y = pGoing.x,pGoing.z,pGoing.y
+        
         if not rad:
             rad = Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
         
@@ -518,16 +389,144 @@ class GraphicsProgram3D:
         elif vector.x>0: vx=1
         else: vx=0
         #XL = int((pWas.x+vx*leeway)//2)
-        XR = int((pWas.x+vx*rad)//2)
-        XV = int((pNow.x+vx*rad)//2)
+        XR = (pNow.x+vx*rad)
+        XV = (pGoing.x+vx*rad)
         xtru = XR == XV or True
 
         if vector.z<0: vz=-1
         elif vector.z>0: vz=1
         else: vz=0
         #ZL = int((pWas.z+vz*leeway)//2)
-        ZR = int((pWas.z+vz*rad)//2)
-        ZV = int((pNow.z+vz*rad)//2)
+        ZR = (pNow.z+vz*rad)
+        ZV = (pGoing.z+vz*rad)
+        ztru = ZR == ZV or True
+        quacko = None
+        didcolision=False
+        if xtru:
+            q = self.ll.queryLevel(XV,Z,y)
+            if q:
+                #print("Collision x at ",XV,Z,q)
+                #print("q.pos",q.pos,"pNow.x",pNow.x)
+                #pNow.x = q.pos.x + q.size.x*(-vx)*(0.5) + rad*(-vx)
+                didcolision=True
+                for i in q.portals:
+                    if i.active:
+                        #print("teleport") 
+                        self.portalLink.teleport(i,pNow,self.view_matrix)
+                        return Vector(0,0,0)
+                #print(pGoing.x,q.pos.x,q.size.x )
+                newVector.x += (q.size.x*(-vx)*(0.5) + q.pos.x) + rad*(-vx)-pGoing.x
+        if ztru:
+            q = self.ll.queryLevel(X,ZV,y)
+            if q:
+                #print("Collision z at ", X, ZV,q)
+                #print("q.pos",q.pos,"pGoing.z",pGoing.z)
+                #fix
+                didcolision=True
+                for i in q.portals:
+                    if i.active: 
+                        #print("teleport")
+                        self.portalLink.teleport(i,pNow,self.view_matrix)
+                        return Vector(0,0,0)
+                
+                newVector.z += (q.size.z*(-vz)*(0.5) + q.pos.z) + rad*(-vz)-pGoing.z
+                #print("Vector fix = ",newVector)
+    
+                
+    
+        if not didcolision:
+            q = self.ll.queryLevel(XV,ZV,y)
+            if q:
+                newVector += Vector(sqrt(pow((q.size.x*(-vx)*(0.5) + q.pos.x) + rad*(-vx)-pGoing.x,2)),0,sqrt(pow((q.size.z*(-vz)*(0.5) + q.pos.z) +rad*(-vz)-pGoing.z,2)))
+                didcolision = True
+                #print("spicy collision ",newVector)
+        newVector += vector
+
+        pGoing = pNow +newVector
+        if newVector.x<0: vx=-1
+        elif newVector.x>0: vx=1
+        else: vx=0
+        if newVector.z<0: vz=-1
+        elif newVector.z>0: vz=1
+        else: vz=0
+        XV = (pGoing.x+vx*rad)
+        ZV = (pGoing.z+vz*rad)
+
+
+        pGO=(Vector(0,0,0)+pGoing).copy()
+
+        q = self.ll.queryObjects(pGoing.x,pGoing.z, y)+self.ll.queryObjects(pNow.x,pNow.z,pNow.y)
+        if q and(vx or vz):
+            for i in q:
+                if i.type == "sw":
+                    swcc = i.collisionCube
+                    swV=Vector(0,0,0)
+
+                    swV.z = swcc.size.z*(-vz)*(0.5) + swcc.pos.z
+                    swV.x = swcc.size.x*(-vx)*(0.5) + swcc.pos.x
+
+                    outX=False
+                    if vx == 1: outX =(swV.x < XV and swV.x > pNow.x)
+                    elif vx == -1: outX =( swV.x > XV and swV.x < pNow.x)
+                    
+                    outZ=False
+                    if vz == 1: outZ =( swV.z < ZV and swV.z > pNow.z)
+                    elif vz == -1: outZ =( swV.z > ZV and swV.z < pNow.z)
+                    if outX and outZ:
+                        if i.posDir.x:
+                            newVector.x += swV.x +(-vx)*rad -pGoing.x
+                        else:
+                            newVector.z += swV.z +(-vz)*rad -pGoing.z
+                    elif outZ:
+                        newVector.z += swV.z+ (-vz)*rad  -pGoing.z
+                    elif outX:
+                        newVector.x += swV.x +(-vx)*rad-pGoing.x
+                        
+
+                    
+
+
+
+        pGoing = pNow +newVector
+        pGoing.y += -FallingSpeed
+        #now for falling here
+        #print(y,pGoing.y)
+        q = self.ll.queryLevel(pGoing.x,pGoing.z,pGoing.y-0.5)
+        if not q:
+            newVector.y += - FallingSpeed
+
+        #special object collision goes here
+        
+        if not didcolision: 
+            return newVector
+        #print(newVector)
+        return newVector
+
+    def maze_collision(self,pNow,vector, rad = 0):
+        """The point is were you want to be vector is how you got there"""
+        
+        pWas = pNow+(vector*(-1))
+        #self.collision(pWas,vector)
+        X= int(pWas.x)
+        Z= int(pWas.z)
+        #leeway = 0.25
+        if not rad:
+            rad =  Vector(self.projection_matrix.near,self.projection_matrix.top,self.projection_matrix.right).__len__()
+        
+        if vector.x<0: vx=-1
+        elif vector.x>0: vx=1
+        else: vx=0
+        #XL = int((pWas.x+vx*leeway)//2)
+        XR = int((pWas.x+vx*rad))
+        XV = int((pNow.x+vx*rad))
+        xtru = XR == XV or True
+
+        if vector.z<0: vz=-1
+        elif vector.z>0: vz=1
+        else: vz=0
+        #ZL = int((pWas.z+vz*leeway)//2)
+        ZR = int((pWas.z+vz*rad))
+        ZV = int((pNow.z+vz*rad))
         ztru = ZR == ZV or True
 
         #print("cam here ",pNow)
@@ -536,7 +535,7 @@ class GraphicsProgram3D:
         quacko = None
         didcolision=False
         if xtru:
-            q = self.query_maze(XV,Z)
+            q = self.ll.queryLevel(XV,Z)
             if q:
                 #print("Collision x at ",XV,Z,q)
                 #print("q.pos",q.pos,"pNow.x",pNow.x)
@@ -548,7 +547,7 @@ class GraphicsProgram3D:
                 
                 
         if ztru:
-            q = self.query_maze(X,ZV)
+            q = self.ll.queryLevel(X,ZV)
             if q:
                 #print("Collision z at ", X, ZV,q)
                 #print("q.pos",q.pos,"pNow.z",pNow.z)
@@ -560,7 +559,7 @@ class GraphicsProgram3D:
                 
     
         if not didcolision:
-            q = self.query_maze(XV,ZV)
+            q = self.ll.queryLevel(XV,ZV)
             if q:
                 #print("Collision xz at ", XV, ZV,q)
                 vector.normalize()

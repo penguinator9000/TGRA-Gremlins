@@ -290,7 +290,7 @@ class SmallWall:
 
     def draw(self,shader):
         
-        self.collisionCube.draw(shader)
+        #self.collisionCube.draw(shader)
         for o in self.DrawObjects:
             o.draw(shader)
         pass

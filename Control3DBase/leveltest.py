@@ -448,8 +448,15 @@ class GraphicsProgram3D:
         newVector += vector
 
         pGoing = pNow +newVector
+        if newVector.x<0: vx=-1
+        elif newVector.x>0: vx=1
+        else: vx=0
+        if newVector.z<0: vz=-1
+        elif newVector.z>0: vz=1
+        else: vz=0
         XV = int((pGoing.x+vx*rad))
         ZV = int((pGoing.z+vz*rad))
+
 
         pGO=(Vector(0,0,0)+pGoing).copy()
 
@@ -470,12 +477,14 @@ class GraphicsProgram3D:
                         swV.z=smallV.z
 
                     #inX =( bigV.x > XV and XV > smallV.x)
-                    if XV>XR: outX =( swV.x < XV and XR < swV.x)
-                    else: outX =( swV.x > XV and XV > swV.x)
+                    outX=False
+                    if vx == 1: outX =( swV.x < XV)
+                    elif vx == -1: outX =( swV.x > XV)
                     
                     #inZ =( bigV.z > ZV and ZV > smallV.z)
-                    if ZV>ZR: outZ =( swV.z < ZV and ZR < swV.z)
-                    else: outZ =( swV.z < ZR and ZV < swV.z)
+                    outZ=False
+                    if vz == 1: outZ =( swV.z < ZV)
+                    elif vz == -1: outZ =( swV.z > ZV)
                     
                     if outX and outZ:
                         if i.posDir.x:

@@ -233,8 +233,8 @@ class SmallWall:
         self.type = "sw"
         SizeV=Vector(xSize,ySize,zSize)
         BoxPos=Vector(smallWallDict["location"]["box-x"],smallWallDict["location"]["box-y"],smallWallDict["location"]["box-z"])
-        posDir=Vector(smallWallDict["location"]["direction"][0]*xSize,smallWallDict["location"]["direction"][1]*ySize,smallWallDict["location"]["direction"][2]*zSize)
-        PosSize=posDir.axWiseMult(SizeV)
+        self.posDir=Vector(smallWallDict["location"]["direction"][0],smallWallDict["location"]["direction"][1],smallWallDict["location"]["direction"][2])
+        PosSize=self.posDir.axWiseMult(SizeV)
         PosSizeHalf=PosSize*0.5
         self.pos = Point(BoxPos.x*xSize + xSize/2+PosSizeHalf.x,(BoxPos.y-1)*ySize + ySize/2+PosSizeHalf.y,BoxPos.z*zSize+zSize/2++PosSizeHalf.z)
         self.boxXYZ=BoxPos.list()
@@ -266,7 +266,7 @@ class SmallWall:
         self.DrawObjects=[]
         upDir.normalize()
         
-        sideDir = ((upDir.normalize(True)+posDir.normalize(True))*(-1)+Vector(1,1,1)).normalize(True)
+        sideDir = ((upDir.normalize(True)+self.posDir.normalize(True))*(-1)+Vector(1,1,1)).normalize(True)
         sideSize = sideDir.axWiseMult(SizeV)
         for i in range(pillarcount):
             rot=upDir*(pi/4)
@@ -290,7 +290,7 @@ class SmallWall:
 
     def draw(self,shader):
         
-        #self.collisionCube.draw(shader)
+        self.collisionCube.draw(shader)
         for o in self.DrawObjects:
             o.draw(shader)
         pass

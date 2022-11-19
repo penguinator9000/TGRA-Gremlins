@@ -138,6 +138,7 @@ class GraphicsProgram3D:
         self.perspective_view=0
         self.map_on=False
         self.FBO_on=False
+        self.lava_on=True
 
         ## --- ADD CONTROLS FOR OTHER KEYS TO CONTROL THE CAMERA --- ##
         self.UP_key_down = False  
@@ -224,8 +225,8 @@ class GraphicsProgram3D:
             WIN=True
             return True
 
-
-        self.ll.lava.update(delta_time)
+        if self.lava_on:
+            self.ll.lava.update(delta_time)
 
         return False 
         
@@ -299,6 +300,8 @@ class GraphicsProgram3D:
                         self.map_on=(not self.map_on)
                     if event.key == K_p:
                         self.FBO_on=(not self.FBO_on)
+                    if event.key == K_l:
+                        self.lava_on=(not self.lava_on)
                     if event.key == K_UP:
                         self.UP_key_down = True
                     if event.key == K_DOWN: 
@@ -443,11 +446,54 @@ class GraphicsProgram3D:
                 didcolision = True
                 #print("spicy collision ",newVector)
         newVector += vector
-        q = self.ll.queryObjects(pGoing.x,pGoing.z, y)
+
+        pGoing = pNow +newVector
+        XV = int((pGoing.x+vx*rad))
+        ZV = int((pGoing.z+vz*rad))
+
+        pGO=(Vector(0,0,0)+pGoing).copy()
+
+        q = self.ll.queryObjects(pGoing.x,pGoing.z, y)+self.ll.queryObjects(pNow.x,pNow.z,pNow.y)
         if q:
             for i in q:
                 if i.type == "sw":
-                    swcc = i.collisionCube    
+                    swcc = i.collisionCube
+                    bigV, smallV = (swcc.size*(0.5)+swcc.pos, swcc.size*(-0.5)+swcc.pos)
+                    swV=Vector(0,0,0)
+                    if abs(bigV.x-pNow.x)< abs(smallV.x-pNow.x):
+                        swV.x=bigV.x
+                    else:
+                        swV.z=smallV.z
+                    if abs(bigV.z-pNow.z)< abs(smallV.z-pNow.z):
+                        swV.z=bigV.z
+                    else:
+                        swV.z=smallV.z
+
+                    #inX =( bigV.x > XV and XV > smallV.x)
+                    if XV>XR: outX =( swV.x < XV and XR < swV.x)
+                    else: outX =( swV.x > XV and XV > swV.x)
+                    
+                    #inZ =( bigV.z > ZV and ZV > smallV.z)
+                    if ZV>ZR: outZ =( swV.z < ZV and ZR < swV.z)
+                    else: outZ =( swV.z < ZR and ZV < swV.z)
+                    
+                    if outX and outZ:
+                        if i.posDir.x:
+                            pGO.x = swV.x -vx*rad 
+                        else:
+                            pGO.z = swV.z -vx*rad  
+                    elif outZ:
+                        pGO.z = swV.z -vx*rad  
+                    elif outX:
+                        pGO.x = swV.x -vx*rad
+                    newVector += pGO-pGoing
+
+                        
+
+                    
+
+
+
         pGoing = pNow +newVector
         pGoing.y += -FallingSpeed
         #now for falling here

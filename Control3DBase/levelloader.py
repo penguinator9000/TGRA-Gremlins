@@ -114,6 +114,13 @@ class LevelLoader():
                 self.objectLevelreference[locationRef] = [tmp]
             else:
                 self.objectLevelreference[locationRef].append(tmp)
+            dx,dy,dz = dict["location"]["direction"]
+            locationRef2 = (x+dx,y+dy,z+dz)
+            if locationRef2 not in self.objectLevelreference:
+                self.objectLevelreference[locationRef2] = [tmp]
+            else:
+                self.objectLevelreference[locationRef2].append(tmp)
+
 
 
         return [self.layout, self.objects]
@@ -166,6 +173,9 @@ class LevelLoader():
         if self.lava: self.lava.draw(shader)#might be not good
         
     def queryLevel(self,x,z,y = 1):
+        """
+            Query the level returning wether the point is above floor colliding with a wall or
+        """
         x = int(x//self.xSize)
         z = int(z//self.zSize)
         y = int((y+2)//self.ySize)
@@ -173,23 +183,22 @@ class LevelLoader():
         if x >= self.xMax or x < 0: return 0
         if z >= self.zMax or z < 0: return 0 
         return self.layout[y][z][x]
-        """
-            Query the level returning wether the point is above floor colliding with a wall or
-        """
+        
         return 
     def queryObjects(self,x,z,y):
-        x = int(x//self.xSize)
-        z = int(z//self.zSize)
-        y = int((y+2)//self.ySize)
         """
             Query the level and return any objects found to inhibit that cell
         
         """
-        ret = None
-        try:
-            ret = self.objectLevelreference[(x,y,z)] 
+        x = int(x//self.xSize)
+        z = int(z//self.zSize)
+        y = int((y+2)//self.ySize)
+        
+        ret = []
+        try:ret = self.objectLevelreference[(x,y,z)]  
         except: return ret
         return ret
+
     def queryPortal(self,x,z,y = 1):
         x = x//self.xSize
         z = z//self.zSize

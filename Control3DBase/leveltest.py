@@ -467,10 +467,11 @@ class GraphicsProgram3D:
                     swcc = i.collisionCube
                     bigV, smallV = (swcc.size*(0.5)+swcc.pos, swcc.size*(-0.5)+swcc.pos)
                     swV=Vector(0,0,0)
+                    print(bigV,smallV)
                     if abs(bigV.x-pNow.x)< abs(smallV.x-pNow.x):
                         swV.x=bigV.x
                     else:
-                        swV.z=smallV.z
+                        swV.x=smallV.x
                     if abs(bigV.z-pNow.z)< abs(smallV.z-pNow.z):
                         swV.z=bigV.z
                     else:
@@ -495,7 +496,10 @@ class GraphicsProgram3D:
                         pGO.z = swV.z -vx*rad  
                     elif outX:
                         pGO.x = swV.x -vx*rad
+                    
                     newVector += pGO-pGoing
+                    print(pGO)
+                    print(newVector)
 
                         
 
